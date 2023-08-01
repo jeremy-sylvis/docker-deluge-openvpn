@@ -13,7 +13,7 @@ This container contains OpenVPN and Deluge with a configuration
 where Deluge is running only when OpenVPN has an active tunnel.
 It bundles configuration files for many popular VPN providers to make the setup easier.
 
-```
+```bash
 $ docker run --cap-add=NET_ADMIN -d \
              --sysctl=net.ipv6.conf.all.disable_ipv6=1 \
               -v /your/storage/path/to/downloads/:/download \
@@ -28,7 +28,8 @@ $ docker run --cap-add=NET_ADMIN -d \
 ```
 
 ## Docker Compose
-```
+
+```docker-compose
 version: '3.2'
 services:
     deluge-openvpn:
@@ -49,16 +50,17 @@ services:
             - '8112:8112'
         image: jsylvis/docker-deluge-openvpn
 ```
+
 ## Documentation
 
-The documentation for this image is hosted on GitHub pages:
-
-https://jsylvis.github.io/docker-deluge-openvpn/
+The documentation for this image is hosted on [this GitHub page](https://jsylvis.github.io/docker-deluge-openvpn/).
 
 ## Access the WEB UI
-Access http://HOSTIP:PORT from a browser on the same network. Default password is `deluge`.
+
+Access `http://HOSTIP:PORT` from a browser on the same network. Default password is `deluge`.
 
 ## Local Client Access
+
 If you want to access Deluge from a Local client other than the WEB UI, like [Trieme for Android App](https://f-droid.org/packages/org.deluge.trireme/):
 Edit the file `/your/storage/path/to/config/auth` to add a new line `username:password:10`, save changes and restart container.
 
