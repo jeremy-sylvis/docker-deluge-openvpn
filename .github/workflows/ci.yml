@@ -55,4 +55,4 @@ jobs:
           file: ./Dockerfile
           platforms: linux/arm64,linux/amd64
           push: true
-          tags: ebrianne/docker-deluge-openvpn:latest
+          tags: jsylvis/docker-deluge-openvpn:latest
