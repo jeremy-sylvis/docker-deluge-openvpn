@@ -58,7 +58,7 @@ ENV OPENVPN_USERNAME=**None** \
 
 HEALTHCHECK --interval=1m CMD /etc/scripts/healthcheck.sh
 
-# Deluge Deamon and web
+# Deluge Deamon and web 
 EXPOSE 8112 58846
 
 CMD ["dumb-init", "/etc/openvpn/init.sh"]
