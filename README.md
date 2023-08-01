@@ -7,7 +7,7 @@
 
 This project is derived from [ebrianne's deluge fork](https://github.com/ebrianne/docker-deluge-openvpn) of [haugenes's docker-transmission-openvpn container](https://github.com/haugene/docker-transmission-openvpn). All VPN configurations are now moved to a [separate repository](https://github.com/haugene/vpn-configs-contrib).
 
-## Quick Start
+## CLI Quick Start
 
 This container contains OpenVPN and Deluge with a configuration
 where Deluge is running only when OpenVPN has an active tunnel.
@@ -27,7 +27,7 @@ $ docker run --cap-add=NET_ADMIN -d \
               jsylvis/docker-deluge-openvpn
 ```
 
-## Docker Compose
+## Docker Compose Quick Start
 
 ```docker-compose
 version: '3.2'
@@ -50,6 +50,12 @@ services:
             - '8112:8112'
         image: jsylvis/docker-deluge-openvpn
 ```
+
+## Execute custom scripts on 'tunnel up' and 'tunnel down' events
+
+Some trackers (e.g. MyAnonamouse) have extended authentication requirements which might require a torrent client which connects over VPN to perform an initial token-based challenge in order to begin an IP-tracked session.
+
+In order to facilitate working within these constraints, this container allows providing a `/tunnel-event-scripts` volume - if provided, any contained `tunnelUp.sh` or `tunnelDown.sh` script will be executed at the appropriate time.
 
 ## Documentation
 
