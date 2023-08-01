@@ -1,11 +1,11 @@
 # OpenVPN and Deluge with WebUI
 
-![Build/Push (master)](https://github.com/ebrianne/docker-deluge-openvpn/workflows/Build/Push%20(master)/badge.svg?branch=master)
-[![Docker Pulls](https://img.shields.io/docker/pulls/ebrianne/docker-deluge-openvpn.svg)](https://hub.docker.com/r/ebrianne/docker-deluge-openvpn/)
+![Build/Push (master)](https://github.com/jeremy-sylvis/docker-deluge-openvpn/workflows/Build/Push%20(master)/badge.svg?branch=master)
+[![Docker Pulls](https://img.shields.io/docker/pulls/jsylvis/docker-deluge-openvpn.svg)](https://hub.docker.com/r/jsylvis/docker-deluge-openvpn/)
 
 ## Acknowledgments
 
-This project is based heavily on the fork of [docker-transmission-openvpn](https://github.com/haugene/docker-transmission-openvpn). All VPN configurations are now moved to a [separate repository](https://github.com/haugene/vpn-configs-contrib).
+This project is derived from [ebrianne's deluge fork](https://github.com/ebrianne/docker-deluge-openvpn) of [haugenes's docker-transmission-openvpn container](https://github.com/haugene/docker-transmission-openvpn). All VPN configurations are now moved to a [separate repository](https://github.com/haugene/vpn-configs-contrib).
 
 ## Quick Start
 
@@ -24,7 +24,7 @@ $ docker run --cap-add=NET_ADMIN -d \
               -e OPENVPN_PASSWORD=pass \
               -e LOCAL_NETWORK=192.168.0.0/16 \
               -p 8112:8112 \
-              ebrianne/docker-deluge-openvpn
+              jsylvis/docker-deluge-openvpn
 ```
 
 ## Docker Compose
@@ -47,13 +47,13 @@ services:
             - net.ipv6.conf.all.disable_ipv6=1
         ports:
             - '8112:8112'
-        image: ebrianne/docker-deluge-openvpn
+        image: jsylvis/docker-deluge-openvpn
 ```
 ## Documentation
 
 The documentation for this image is hosted on GitHub pages:
 
-https://ebrianne.github.io/docker-deluge-openvpn/
+https://jsylvis.github.io/docker-deluge-openvpn/
 
 ## Access the WEB UI
 Access http://HOSTIP:PORT from a browser on the same network. Default password is `deluge`.
