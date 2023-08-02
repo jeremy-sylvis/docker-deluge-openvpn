@@ -7,7 +7,7 @@
 
 This project is derived from [ebrianne's deluge fork](https://github.com/ebrianne/docker-deluge-openvpn) of [haugenes's docker-transmission-openvpn container](https://github.com/haugene/docker-transmission-openvpn). All VPN configurations are now moved to a [separate repository](https://github.com/haugene/vpn-configs-contrib).
 
-## Quick Start
+## CLI Quick Start
 
 This container contains OpenVPN and Deluge with a configuration
 where Deluge is running only when OpenVPN has an active tunnel.
@@ -27,7 +27,7 @@ $ docker run --cap-add=NET_ADMIN -d \
               jsylvis/docker-deluge-openvpn
 ```
 
-## Docker Compose
+## Docker Compose Quick Start
 
 ```docker-compose
 version: '3.2'

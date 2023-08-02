@@ -99,3 +99,10 @@ if [[ $CONFIG_MOD_REMAP_USR1 == "1" ]]; then
     sed -i "\$q" "$CONFIG" # Ensure config ends with a line feed
     echo "remap-usr1 SIGTERM" >> "$CONFIG"
 fi
+
+# In OpenVPN 2.5, '--cipher' is deprecated - strip it from configs.
+echo "Removing '--cipher' from OpenVPN config due to deprecation..."
+sed -i -E "/^cipher.*\s*$/d" "$CONFIG"
+
+# I'm experiencing DNS issues; try forcing ignoring VPN DNS...
+echo 'pull-filter ignore "dhcp-option DNS"' >> "$CONFIG"
