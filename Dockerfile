@@ -2,6 +2,7 @@ FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND="noninteractive"
 
+# && rm -rf deluge-2.1.1;
 RUN set -ex; \
     apt-get update && \
     apt-get -y install software-properties-common && \
@@ -15,7 +16,7 @@ RUN set -ex; \
     wget http://download.deluge-torrent.org/source/2.1/deluge-2.1.1.tar.xz && tar -xf deluge-2.1.1.tar.xz && \
         cd deluge-2.1.1 && cat RELEASE-VERSION && \
         python3 setup.py clean -a && python3 setup.py build && python3 setup.py install --install-layout=deb && \
-        cd packaging/systemd && cp deluge*.service /etc/systemd/system/ && cd ../../../ && rm -rf deluge-2.1.1; \
+        cd packaging/systemd && cp deluge*.service /etc/systemd/system/ && cd ../../../; \
     echo "Cleanup" && \
     rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*; \
     echo "Adding user" && \
