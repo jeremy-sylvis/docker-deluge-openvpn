@@ -2,7 +2,6 @@ FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND="noninteractive"
 
-# && rm -rf deluge-2.1.1;
 RUN set -ex; \
     apt-get update && \
     apt-get -y install software-properties-common && \
@@ -13,10 +12,12 @@ RUN set -ex; \
         python3-gi-cairo gir1.2-gtk-3.0 gir1.2-appindicator3-0.1 python3-pygame libnotify4 \
         librsvg2-common xdg-utils; \
     echo "Download and install Deluge 2.1.1 from source" && \
-    wget http://download.deluge-torrent.org/source/2.1/deluge-2.1.1.tar.xz && tar -xf deluge-2.1.1.tar.xz && \
-        cd deluge-2.1.1 && cat RELEASE-VERSION && \
-        python3 setup.py clean -a && python3 setup.py build && python3 setup.py install --install-layout=deb && \
-        cd packaging/systemd && cp deluge*.service /etc/systemd/system/ && cd ../../../; \
+    # Actually grab Deluge
+    mkdir /tmp/deluge && cd /tmp/deluge && wget http://download.deluge-torrent.org/source/2.1/deluge-2.1.1.tar.xz && tar -xf deluge-2.1.1.tar.xz && cd deluge-2.1.1 && cat RELEASE-VERSION && \
+    # Build & install
+    python3 setup.py build && python3 setup.py install --install-layout=deb && cp /tmp/deluge/deluge-2.1.1/packaging/systemd/deluge*.service /etc/systemd/system/ && \
+    # Prep sys files & cleanup
+    rm -rf /tmp/deluge-2.1.1 && cd /; \
     echo "Cleanup" && \
     rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*; \
     echo "Adding user" && \
