@@ -173,7 +173,7 @@ python3 /etc/openvpn/persistEnvironment.py /etc/deluge/environment-variables.sh
 # Setting up kill switch
 /etc/ufw/enable.sh tun0 ${CHOSEN_OPENVPN_CONFIG}
 
-DELUGE_CONTROL_OPTS="--script-security 2 --up-delay --up /etc/openvpn/tunnelUp.sh --route-up /etc/openvpn/route-up.sh --down /etc/openvpn/tunnelDown.sh"
+DELUGE_CONTROL_OPTS="--script-security 2 --up-delay --up /etc/openvpn/tunnelUp.sh --down /etc/openvpn/tunnelDown.sh"
 # shellcheck disable=SC2086
 log "Starting openvpn"
 exec openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPENVPN_CONFIG}"
