@@ -107,4 +107,13 @@ sed -i -E "/^cipher.*\s*$/d" "$CONFIG"
 echo "data-ciphers-fallback BF-CBC" >> "$CONFIG"
 
 # I'm experiencing DNS issues; try forcing ignoring VPN DNS...
+echo "Ignoring remote DNS due to issues..."
 echo 'pull-filter ignore "dhcp-option DNS"' >> "$CONFIG"
+
+# When using `proto udp`, `ping` must be specified or `up-delay` will not be reliable
+PROTO_DNS_RESULT = $(grep -E -i -w '^\s*proto\s*udp' "$CONFIG")
+PING_RESULT = $(grep -E -i -w '^\s*ping' "$CONFIG")
+if [[ $PROTO_DNS_RESULT && ! $PING_RESULT]]; then
+    echo "The \`proto dns\` option was detected without the \`ping\` option; inserting \`ping\` in order to fix \`up-delay\`..."
+    echo 'ping' >> "$CONFIG"
+fi
