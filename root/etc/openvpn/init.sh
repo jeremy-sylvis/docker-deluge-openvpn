@@ -184,8 +184,12 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
     echo "$line" | grep --quiet -P '^.*(Initialization Sequence Completed).*$'
     MATCH=$?
     if [[ $MATCH -eq 0 ]]; then
-      echo "OpenVPN initialization complete; executing post-init script..."
-      # TODO: Post-init
+      if [[ -x /config/openvpn-post-init.sh ]]; then
+        echo "OpenVPN initialization complete and a post-init script was detected, executing it..."
+        /config/openvpn-post-init.sh
+      else
+        echo "OpenVPN initialization complete but no post-init script detected; skipping it..."
+      fi
     fi
 
     # Pass-through captured output
