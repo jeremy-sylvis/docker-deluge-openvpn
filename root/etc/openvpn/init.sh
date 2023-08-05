@@ -176,4 +176,19 @@ python3 /etc/openvpn/persistEnvironment.py /etc/deluge/environment-variables.sh
 DELUGE_CONTROL_OPTS="--script-security 2 --up-delay --up /etc/openvpn/tunnelUp.sh --down /etc/openvpn/tunnelDown.sh"
 # shellcheck disable=SC2086
 log "Starting openvpn"
-exec openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPENVPN_CONFIG}"
+
+# Capture/relay output from `openvpn` in order to watch for completed initialization, at which point we can execute a post-initialize script.
+stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPENVPN_CONFIG}" | {
+  while IFS= read -r line
+  do
+    echo "$line" | grep --quiet -P '^.*(Initialization Sequence Completed).*$'
+    MATCH=$?
+    if [[ $MATCH -eq 0 ]]; then
+      echo "OpenVPN initialization complete; executing post-init script..."
+      # TODO: Post-init
+    fi
+
+    # Pass-through captured output
+    echo "$line"
+  done
+}
