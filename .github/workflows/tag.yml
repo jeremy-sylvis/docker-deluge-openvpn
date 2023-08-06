@@ -36,4 +36,4 @@ jobs:
           file: ./Dockerfile
           platforms: linux/arm64,linux/amd64
           push: true
-          tags: ebrianne/docker-deluge-openvpn:${{ steps.get_version.outputs.TAG_NAME }}
+          tags: jsylvis/docker-deluge-openvpn:${{ steps.get_version.outputs.TAG_NAME }}

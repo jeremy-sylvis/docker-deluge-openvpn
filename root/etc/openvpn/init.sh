@@ -179,11 +179,26 @@ log "Starting openvpn"
 
 # Capture/relay output from `openvpn` in order to watch for completed initialization, at which point we can execute a post-initialize script.
 stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPENVPN_CONFIG}" | {
+  # Once initialization is detected, there's no point to continuing to run `grep`
+  WAS_INITIALIZATION_COMPLETED=false
+
   while IFS= read -r line
   do
+    # Pass-through captured output
+    echo "$line"
+
+    # If we've already detected initialization, skip detection attempts
+    if [ "$WAS_INITIALIZATION_COMPLETED" = true ]; then
+      continue
+    fi
+
+    # Scan for "Initialization Sequence Completed" from OpenVPN outputs
     echo "$line" | grep --quiet -P '^.*(Initialization Sequence Completed).*$'
     MATCH=$?
     if [[ $MATCH -eq 0 ]]; then
+      # Set our latch
+      WAS_INITIALIZATION_COMPLETED=true
+
       if [[ -x /config/openvpn-post-init.sh ]]; then
         echo "OpenVPN initialization complete and a post-init script was detected, executing it..."
         /config/openvpn-post-init.sh
@@ -191,8 +206,5 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
         echo "OpenVPN initialization complete but no post-init script detected; skipping it..."
       fi
     fi
-
-    # Pass-through captured output
-    echo "$line"
   done
 }
