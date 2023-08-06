@@ -106,6 +106,8 @@ sed -i -E "/^cipher.*\s*$/d" "$CONFIG"
 # "--cipher is not set. Previous OpenVPN version defaulted to BF-CBC as fallback when cipher negotiation failed in this case. If you need this fallback please add '--data-ciphers-fallback BF-CBC' to your configuration and/or add BF-CBC to --data-ciphers."
 echo "data-ciphers-fallback BF-CBC" >> "$CONFIG"
 
-# I'm experiencing DNS issues; try forcing ignoring VPN DNS...
-echo "Ignoring remote DNS due to issues..."
-echo 'pull-filter ignore "dhcp-option DNS"' >> "$CONFIG"
+# When using the OVERRIDE_DNS option, ignore DNS pushed by the OpenVPN remote.
+if [ -n "OVERRIDE_DNS" ]; then
+    echo "OVERRIDE_DNS was specified; appending a pull-filter to ignore DNS..."
+    echo 'pull-filter ignore "dhcp-option DNS"' >> "$CONFIG"
+fi
