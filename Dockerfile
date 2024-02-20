@@ -7,11 +7,10 @@ RUN set -ex; \
     apt-get -y install software-properties-common && \
     echo "Set up prerequisites to build Deluge from source"; \
     apt -y install git intltool closure-compiler python3-pip dumb-init iputils-ping dnsutils bash jq net-tools openvpn curl ufw p7zip-full unrar unzip wget && \
-    pip3 install --user tox && \
-    pip3 install incremental && \
+    pip3 install --user tox incremental typing_extensions && \
     apt -y install python3-libtorrent python3-geoip python3-dbus python3-gi \
         python3-gi-cairo gir1.2-gtk-3.0 gir1.2-appindicator3-0.1 python3-pygame libnotify4 \
-        librsvg2-common xdg-utils python3-requests python3-future; \
+        librsvg2-common xdg-utils; \
     echo "Download and install Deluge 2.1.1 from source" && \
     # Actually grab Deluge
     mkdir /tmp/deluge && cd /tmp/deluge && wget http://download.deluge-torrent.org/source/2.1/deluge-2.1.1.tar.xz && tar -xf deluge-2.1.1.tar.xz && cd deluge-2.1.1 && cat RELEASE-VERSION && \
