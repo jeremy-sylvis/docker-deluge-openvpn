@@ -10,19 +10,18 @@ RUN set -ex; \
     pip3 install --user tox && \
     apt -y install python3-libtorrent python3-geoip python3-dbus python3-gi \
         python3-gi-cairo gir1.2-gtk-3.0 gir1.2-appindicator3-0.1 python3-pygame libnotify4 \
-        librsvg2-common xdg-utils; \
-    echo "Prepare dependencies of Deluge plugins" && \
-    pip3 install incremental typing_extensions attrs && \
-    echo "Download and install Deluge 2.1.1 from source" && \
+        librsvg2-common xdg-utils python3-incremental python3-typing-extensions python3-attr python3-setuptools; \
+    echo "Download and install Deluge 2.1.1 from source"; \
     # Actually grab Deluge
     mkdir /tmp/deluge && cd /tmp/deluge && wget http://download.deluge-torrent.org/source/2.1/deluge-2.1.1.tar.xz && tar -xf deluge-2.1.1.tar.xz && cd deluge-2.1.1 && cat RELEASE-VERSION && \
     # Build & install
     python3 setup.py build && python3 setup.py install --install-layout=deb && cp /tmp/deluge/deluge-2.1.1/packaging/systemd/deluge*.service /etc/systemd/system/ && \
-    # Prep sys files & cleanup
-    rm -rf /tmp/deluge-2.1.1 && cd /; \
-    echo "Cleanup" && \
-    rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*; \
-    echo "Adding user" && \
+    echo "Cleanup Deluge 2.1.1 source"; \
+    # Cleanup Deluge itself
+    cd / && rm -rf /tmp/deluge/deluge-2.1.1 && \
+    echo "Cleanup image temp and apt lists"; \
+    rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/* && \
+    echo "Adding user"; \
     groupmod -g 1000 users && \
         useradd -u 911 -U -d /config -s /bin/false abc && \
         usermod -G users abc
