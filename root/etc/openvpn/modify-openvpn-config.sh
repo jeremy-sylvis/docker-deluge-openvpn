@@ -19,6 +19,7 @@ CONFIG_MOD_RESOLV_RETRY=${CONFIG_MOD_RESOLV_RETRY:-"1"}
 CONFIG_MOD_TLS_CERTS=${CONFIG_MOD_TLS_CERTS:-"1"}
 CONFIG_MOD_VERBOSITY=${CONFIG_MOD_VERBOSITY:-"1"}
 CONFIG_MOD_REMAP_USR1=${CONFIG_MOD_REMAP_USR1:-"1"}
+CONFIG_MOD_TUNNEL_UP_DOWN=${CONFIG_MOD_TUNNEL_UP_DOWN:-"1"}
 
 ## Option 1 - Change the auth-user-pass line to point to credentials file
 if [[ $CONFIG_MOD_USERPASS == "1" ]]; then
@@ -110,4 +111,11 @@ echo "data-ciphers-fallback BF-CBC" >> "$CONFIG"
 if [ -n "OVERRIDE_DNS" ]; then
     echo "OVERRIDE_DNS was specified; appending a pull-filter to ignore DNS..."
     echo 'pull-filter ignore "dhcp-option DNS"' >> "$CONFIG"
+fi
+
+## Option 8 - Replace the "up" and "down" hooks with our own scripts
+if [[ $CONFIG_MOD_TUNNEL_UP_DOWN == "1" ]]; then
+    echo "Modification: Point 'up' and 'down' hooks at our hook scripts"
+    sed -i "s#up .*#up /etc/openvpn/tunnelUp.sh#g" "$CONFIG"
+    sed -i "s#down .*#down /etc/openvpn/tunnelDown.sh#g" "$CONFIG"
 fi
