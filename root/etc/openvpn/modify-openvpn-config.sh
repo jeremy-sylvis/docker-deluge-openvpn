@@ -115,7 +115,7 @@ fi
 
 ## Option 8 - Replace the "up" and "down" hooks with our own scripts
 if [[ $CONFIG_MOD_TUNNEL_UP_DOWN == "1" ]]; then
-    echo "Modification: Point 'up' and 'down' hooks at our hook scripts"
-    sed -i "s#up .*#up /etc/openvpn/tunnelUp.sh#g" "$CONFIG"
-    sed -i "s#down .*#down /etc/openvpn/tunnelDown.sh#g" "$CONFIG"
+    echo "Modification: Remove 'up' and 'down' hooks which conflict with CLI"
+    sed -i -E "/^up.*\s*$/d" "$CONFIG"
+    sed -i -E "/^down.*\s*$/d" "$CONFIG"
 fi
