@@ -181,29 +181,93 @@ log "Starting openvpn"
 stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPENVPN_CONFIG}" | {
   # Once initialization is detected, there's no point to continuing to run `grep`
   WAS_INITIALIZATION_COMPLETED=false
+  WAS_REMOTE_IP_DETECTED=false
 
   while IFS= read -r line
   do
     # Pass-through captured output
     echo "$line"
 
-    # If we've already detected initialization, skip detection attempts
-    if [ "$WAS_INITIALIZATION_COMPLETED" = true ]; then
-      continue
+    if [ "$WAS_INITIALIZATION_COMPLETED" != true ]; then
+      # Scan for "Initialization Sequence Completed" from OpenVPN outputs
+      echo "$line" | grep --quiet -P '^.*(Initialization Sequence Completed).*$'
+      MATCH=$?
+      if [[ $MATCH -eq 0 ]]; then
+        # Set our latch
+        WAS_INITIALIZATION_COMPLETED=true
+
+        if [[ -x /config/openvpn-post-init.sh ]]; then
+          echo "OpenVPN initialization complete and a post-init script was detected, executing it..."
+          /config/openvpn-post-init.sh
+        else
+          echo "OpenVPN initialization complete but no post-init script detected; skipping it..."
+        fi
+      fi
     fi
 
-    # Scan for "Initialization Sequence Completed" from OpenVPN outputs
-    echo "$line" | grep --quiet -P '^.*(Initialization Sequence Completed).*$'
-    MATCH=$?
-    if [[ $MATCH -eq 0 ]]; then
-      # Set our latch
-      WAS_INITIALIZATION_COMPLETED=true
+    # ${VARIABLE,,} is .ToLower()
+    if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "$WAS_REMOTE_IP_DETECTED" != true ]; then
+      # In order to handle ProtonVPN port forwarding+NAT, we need to use NATPMPC. For this,
+      # we need the Remote IP. We can use that to establish the forwarded port.
+      # With that, we'll need to force-update Deluge configuration to listen on that forwarded port.
 
-      if [[ -x /config/openvpn-post-init.sh ]]; then
-        echo "OpenVPN initialization complete and a post-init script was detected, executing it..."
-        /config/openvpn-post-init.sh
-      else
-        echo "OpenVPN initialization complete but no post-init script detected; skipping it..."
+      # Scan for "Peer Connection Initiated with [AF_INET][iphere]" to fetch the remote IP
+      # Apparently this sucks at handling capture groups - use an inline python handler
+      REMOTE_IP=$(echo "$line" | python -c $'
+        import re
+        import sys
+        g=re.match(r\'^.*Peer Connection Initiated with \[AF_INET\](.*)$\',sys.stdin)
+        if g is not None:
+          print g.group(1)
+        ')
+
+      if [ -n "$REMOTE_IP" ]; then
+        echo "Detected REMOTE_IP: $REMOTE_IP"
+
+        # Setup NATPMPC using the Remote IP
+        echo "Querying gateway for natpmpc compatibility..."
+        NATPMPC_GATEWAY_CHECK_RESULT=$(natpmpc -g $REMOTE_IP)
+
+        # If the gateway wasn't compatible, just exit.
+        if [ "$?" != "0" ]; then
+          echo "Gateway is not compatible with natpmpc. Error:"
+          echo $NATPMPC_GATEWAY_CHECK_RESULT
+          exit 1
+        fi
+
+        NATPMPC_UDP_FORWARD_RESULT=$(natpmpc -g $REMOTE_IP -a 1 0 udp 60)
+
+        # IF the forward failed, just exit.
+        if [ "$?" != "0"]; then
+          echo "Failed to forward UDP port using natpmpc. Error:"
+          echo "$NATPMPC_UDP_FORWARD_RESULT"
+          exit 2
+        fi
+
+        # Parse the result for the port being forwarded
+        NATPMPC_FORWARDED_PORT=$(echo $NATPMPC_UDP_FORWARD_RESULT | python -c $'
+          import re
+          import sys
+          for i in sys.stdin:
+            i=i.strip()
+            g=re.match(r\'Mapped public port ([0-9]{1,5}).*\',i)
+            if g is not None:
+              print g.group(1)
+          ')
+
+        if [ -z "$NATPMPC_FORWARDED_PORT" ]; then
+          echo "Failed to parse forwarded port. Output:"
+          echo $NATPMPC_UDP_FORWARD_RESULT
+          exit 3
+        fi
+
+        # Update Deluge config with this new port
+        # TBD
+        
+        # Begin a background loop to keep the port active
+        # TBD
+
+        WAS_REMOTE_IP_DETECTED=true
       fi
     fi
   done
