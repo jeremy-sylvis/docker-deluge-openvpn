@@ -218,8 +218,8 @@ import re
 import sys
 g=re.match(r\'^.*Peer Connection Initiated with \[AF_INET\](.*)$\',sys.stdin)
 if g is not None:
-  print g.group(1)
-        ')
+  print(g.group(1))
+')
 
       if [ -n "$REMOTE_IP" ]; then
         echo "Detected REMOTE_IP: $REMOTE_IP"
@@ -252,8 +252,8 @@ for i in sys.stdin:
   i=i.strip()
   g=re.match(r\'Mapped public port ([0-9]{1,5}).*\',i)
   if g is not None:
-    print g.group(1)
-          ')
+    print(g.group(1))
+')
 
         if [ -z "$NATPMPC_FORWARDED_PORT" ]; then
           echo "Failed to parse forwarded port. Output:"
