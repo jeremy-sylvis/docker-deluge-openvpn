@@ -213,7 +213,7 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
 
       # Scan for "Peer Connection Initiated with [AF_INET][iphere]" to fetch the remote IP
       # Apparently this sucks at handling capture groups - use an inline python handler
-      REMOTE_IP=$(echo "$line" | python -c $'
+      REMOTE_IP=$(echo "$line" | python3 -c $'
         import re
         import sys
         g=re.match(r\'^.*Peer Connection Initiated with \[AF_INET\](.*)$\',sys.stdin)
@@ -245,7 +245,7 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
         fi
 
         # Parse the result for the port being forwarded
-        NATPMPC_FORWARDED_PORT=$(echo $NATPMPC_UDP_FORWARD_RESULT | python -c $'
+        NATPMPC_FORWARDED_PORT=$(echo $NATPMPC_UDP_FORWARD_RESULT | python3 -c $'
           import re
           import sys
           for i in sys.stdin:
