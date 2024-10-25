@@ -1,6 +1,14 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ARG DEBIAN_FRONTEND="noninteractive"
+
+#libnatpmp1:
+#    Installed: 20150609-7.1build2
+#    Candidate: 20150609-7.1build2
+#    Version table:
+#   *** 20150609-7.1build2 100
+#          100 /var/lib/dpkg/status
+# We need a newer version of natpmpc.
 
 RUN set -ex; \
     apt-get update && \
