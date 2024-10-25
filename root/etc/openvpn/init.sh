@@ -216,7 +216,8 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
       REMOTE_IP=$(echo "$line" | python3 -c $'
 import re
 import sys
-g=re.match(r\'^.*Peer Connection Initiated with \[AF_INET\](.*)$\',sys.stdin)
+line=sys.stdin.read().rstrip()
+g=re.match(r\'^.*Peer Connection Initiated with \[AF_INET\](.*)$\',line)
 if g is not None:
   print(g.group(1))
 ')
@@ -248,8 +249,8 @@ if g is not None:
         NATPMPC_FORWARDED_PORT=$(echo $NATPMPC_UDP_FORWARD_RESULT | python3 -c $'
 import re
 import sys
-for i in sys.stdin:
-  i=i.strip()
+for i in sys.stdin.readlines():
+  i=i.rstrip()
   g=re.match(r\'Mapped public port ([0-9]{1,5}).*\',i)
   if g is not None:
     print(g.group(1))
