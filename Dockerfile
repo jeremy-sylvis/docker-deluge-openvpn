@@ -1,3 +1,5 @@
+# Can't use ubuntu:24.04 until deluge is updated to not use deprecated python bits like disttools
+# and "setup.py" direct invocation
 FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -16,13 +18,16 @@ RUN set -ex; \
     echo "Set up prerequisites to build Deluge from source" && \
     apt -y install git intltool closure-compiler python3-pip dumb-init iputils-ping dnsutils bash jq net-tools openvpn curl ufw p7zip-full unrar unzip wget pipx
 
+RUN echo "Download, build, and install natpmpc from source" && \
+    mkdir /tmp/libnatpmp && cd /tmp/libnatpmp && \
+    git clone https://github.com/miniupnp/libnatpmp.git && cd libnatpmp && \
+    make all && make install
+
     # Setup a venv for our old tools
-RUN mkdir /tmp/deluge-venv && python3 -m venv /tmp/deluge-venv && . /tmp/deluge-venv/bin/activate && \
-    pip3 install --use-pep517 tox && pip3 install --use-pep517 setuptools==58.2.0 && \
-    #pip3 install --use-pep517 tox && pip3 install --use-pep517 setuptools && \
+RUN pip3 install --user tox && \
     apt -y install python3-libtorrent python3-geoip python3-dbus python3-gi \
         python3-gi-cairo gir1.2-gtk-3.0 gir1.2-appindicator3-0.1 python3-pygame libnotify4 \
-        librsvg2-common xdg-utils python3-incremental python3-typing-extensions python3-attr natpmpc; \
+        librsvg2-common xdg-utils python3-incremental python3-typing-extensions python3-attr python3-setuptools natpmpc && \
     echo "Download and install Deluge 2.1.1 from source" && \
     # Actually grab Deluge
     mkdir /tmp/deluge && cd /tmp/deluge && wget http://download.deluge-torrent.org/source/2.1/deluge-2.1.1.tar.xz && tar -xf deluge-2.1.1.tar.xz && cd deluge-2.1.1 && cat RELEASE-VERSION && \
