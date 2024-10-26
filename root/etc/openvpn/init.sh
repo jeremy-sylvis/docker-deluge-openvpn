@@ -238,6 +238,8 @@ if g is not None:
 
         NATPMPC_UDP_FORWARD_RESULT=$(natpmpc -g $REMOTE_IP -a 1 0 udp 60)
 
+        echo $NATPMPC_UDP_FORWARD_RESULT
+
         # IF the forward failed, just exit.
         if [ "$?" != "0"]; then
           echo "Failed to forward UDP port using natpmpc. Error:"
