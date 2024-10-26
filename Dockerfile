@@ -30,9 +30,8 @@ RUN set -ex; \
     echo "Cleanup image temp and apt lists"; \
     rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/* && \
     echo "Adding user"; \
-    groupmod -g 1000 users && \
-        useradd -u 911 -U -d /config -s /bin/false abc && \
-        usermod -G users abc
+    useradd -u 911 -U -d /config -s /bin/false abc && \
+    usermod -G 1000 abc
 
 # Add configuration and scripts
 COPY root/ /
