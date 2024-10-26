@@ -23,7 +23,7 @@ RUN set -ex; \
     # Actually grab Deluge
     mkdir /tmp/deluge && cd /tmp/deluge && wget http://download.deluge-torrent.org/source/2.1/deluge-2.1.1.tar.xz && tar -xf deluge-2.1.1.tar.xz && cd deluge-2.1.1 && cat RELEASE-VERSION && \
     # Build & install
-    python3 setup.py build && python3 setup.py install --install-layout=deb && cp /tmp/deluge/deluge-2.1.1/packaging/systemd/deluge*.service /etc/systemd/system/ && \
+    python3 --use-pep517 setup.py build && python3 --use-pep517 setup.py install --install-layout=deb && cp /tmp/deluge/deluge-2.1.1/packaging/systemd/deluge*.service /etc/systemd/system/ && \
     echo "Cleanup Deluge 2.1.1 source"; \
     # Cleanup Deluge itself
     cd / && rm -rf /tmp/deluge/deluge-2.1.1 && \
