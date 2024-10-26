@@ -224,10 +224,12 @@ if g is not None:
 
       if [ -n "$REMOTE_IP" ]; then
         echo "Detected REMOTE_IP: $REMOTE_IP"
+        $TRIMMED_REMOTE_IP=$(echo "$REMOTE_IP" | cut -d : -f 1)
+        echo "Trimmed remote IP: $TRIMMED_REMOTE_IP"
 
         # Setup NATPMPC using the Remote IP
         echo "Querying gateway for natpmpc compatibility..."
-        NATPMPC_GATEWAY_CHECK_RESULT=$(natpmpc -g $REMOTE_IP)
+        NATPMPC_GATEWAY_CHECK_RESULT=$(natpmpc -g $TRIMMED_REMOTE_IP)
 
         # If the gateway wasn't compatible, just exit.
         if [ "$?" != "0" ]; then
@@ -236,7 +238,7 @@ if g is not None:
           exit 1
         fi
 
-        NATPMPC_UDP_FORWARD_RESULT=$(natpmpc -g $REMOTE_IP -a 1 0 udp 60)
+        NATPMPC_UDP_FORWARD_RESULT=$(natpmpc -g $TRIMMED_REMOTE_IP -a 1 0 udp 60)
 
         echo $NATPMPC_UDP_FORWARD_RESULT
 
