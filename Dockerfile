@@ -16,11 +16,11 @@ RUN set -ex; \
     apt-get update && \
     apt-get -y install software-properties-common && \
     echo "Set up general prerequisites" && \
-    apt -y install git intltool closure-compiler python3-pip dumb-init iputils-ping dnsutils bash jq net-tools openvpn curl ufw p7zip-full unrar unzip wget && \
+    apt -y install git intltool closure-compiler python3-pip dumb-init iputils-ping dnsutils bash jq net-tools openvpn curl ufw p7zip-full unrar unzip wget python3-venv && \
     echo "Download, build, and install natpmpc from source" && \
     mkdir /tmp/libnatpmp && cd /tmp/libnatpmp && \
     git clone https://github.com/miniupnp/libnatpmp.git && cd libnatpmp && \
-    make all && make install && \
+    make all && make install && cd / && rm -rf /tmp/libnatpmp && \
     echo "Set up Deluge prerequisites" && \
     mkdir /tmp/deluge-venv && python3 -m venv /tmp/deluge-venv && . /tmp/deluge-venv/bin/activate && \
     pip3 install tox && pip3 install setuptools==62.6.0 && pip3 install twisted==22.10.0 && \
