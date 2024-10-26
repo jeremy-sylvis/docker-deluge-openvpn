@@ -24,10 +24,11 @@ RUN echo "Download, build, and install natpmpc from source" && \
     make all && make install
 
     # Setup a venv for our old tools
-RUN pip3 install --user tox && \
+RUN mkdir /tmp/deluge-venv && python3 -m venv /tmp/deluge-venv && . /tmp/deluge-venv/bin/activate && \
+    pip3 install tox && pip3 install setuptools==62.6.0 && \
     apt -y install python3-libtorrent python3-geoip python3-dbus python3-gi \
         python3-gi-cairo gir1.2-gtk-3.0 gir1.2-appindicator3-0.1 python3-pygame libnotify4 \
-        librsvg2-common xdg-utils python3-incremental python3-typing-extensions python3-attr python3-setuptools natpmpc && \
+        librsvg2-common xdg-utils python3-incremental python3-typing-extensions python3-attr natpmpc && \
     echo "Download and install Deluge 2.1.1 from source" && \
     # Actually grab Deluge
     mkdir /tmp/deluge && cd /tmp/deluge && wget http://download.deluge-torrent.org/source/2.1/deluge-2.1.1.tar.xz && tar -xf deluge-2.1.1.tar.xz && cd deluge-2.1.1 && cat RELEASE-VERSION && \
