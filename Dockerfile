@@ -13,23 +13,25 @@ ARG DEBIAN_FRONTEND="noninteractive"
 RUN set -ex; \
     apt-get update && \
     apt-get -y install software-properties-common && \
-    echo "Set up prerequisites to build Deluge from source"; \
-    apt -y install git intltool closure-compiler python3-pip dumb-init iputils-ping dnsutils bash jq net-tools openvpn curl ufw p7zip-full unrar unzip wget && \
-    pip3 install --user tox && pip3 install --user setuptools==58.2.0 \
+    echo "Set up prerequisites to build Deluge from source" && \
+    apt -y install git intltool closure-compiler python3-pip dumb-init iputils-ping dnsutils bash jq net-tools openvpn curl ufw p7zip-full unrar unzip wget pipx && \
+    pipx ensurepath && \
+    # pipx install --use-pep517 --user tox && pipx install --use-pep517 --user setuptools==58.2.0 \
+    pipx install tox && pipx install setuptools==58.2.0 && \
     apt -y install python3-libtorrent python3-geoip python3-dbus python3-gi \
         python3-gi-cairo gir1.2-gtk-3.0 gir1.2-appindicator3-0.1 python3-pygame libnotify4 \
         librsvg2-common xdg-utils python3-incremental python3-typing-extensions python3-attr natpmpc; \
-    echo "Download and install Deluge 2.1.1 from source"; \
+    echo "Download and install Deluge 2.1.1 from source" && \
     # Actually grab Deluge
     mkdir /tmp/deluge && cd /tmp/deluge && wget http://download.deluge-torrent.org/source/2.1/deluge-2.1.1.tar.xz && tar -xf deluge-2.1.1.tar.xz && cd deluge-2.1.1 && cat RELEASE-VERSION && \
     # Build & install
     python3 setup.py build && python3 setup.py install --install-layout=deb && cp /tmp/deluge/deluge-2.1.1/packaging/systemd/deluge*.service /etc/systemd/system/ && \
-    echo "Cleanup Deluge 2.1.1 source"; \
+    echo "Cleanup Deluge 2.1.1 source" && \
     # Cleanup Deluge itself
     cd / && rm -rf /tmp/deluge/deluge-2.1.1 && \
-    echo "Cleanup image temp and apt lists"; \
+    echo "Cleanup image temp and apt lists" && \
     rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/* && \
-    echo "Adding user"; \
+    echo "Adding user" && \
     useradd -u 911 -U -d /config -s /bin/false abc && \
     usermod -G 1000 abc && \
     usermod -G users abc
