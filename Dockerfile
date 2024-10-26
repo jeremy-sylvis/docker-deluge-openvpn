@@ -16,7 +16,7 @@ RUN set -ex; \
     apt-get update && \
     apt-get -y install software-properties-common && \
     echo "Set up general prerequisites" && \
-    apt -y install git intltool closure-compiler python3-pip dumb-init iputils-ping dnsutils bash jq net-tools openvpn curl ufw p7zip-full unrar unzip wget coreutils && \
+    apt -y install git intltool closure-compiler python3-pip dumb-init iputils-ping dnsutils bash jq net-tools openvpn curl ufw p7zip-full unrar unzip wget && \
     echo "Download, build, and install natpmpc from source" && \
     mkdir /tmp/libnatpmp && cd /tmp/libnatpmp && \
     git clone https://github.com/miniupnp/libnatpmp.git && cd libnatpmp && \

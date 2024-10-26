@@ -224,7 +224,7 @@ if g is not None:
 
       if [ -n "$REMOTE_IP" ]; then
         echo "Detected REMOTE_IP: $REMOTE_IP"
-        $TRIMMED_REMOTE_IP=$(echo "$REMOTE_IP" | cut -d : -f 1)
+        TRIMMED_REMOTE_IP=$(echo "$REMOTE_IP" | cut -d: -f1)
         echo "Trimmed remote IP: $TRIMMED_REMOTE_IP"
 
         # Setup NATPMPC using the Remote IP
