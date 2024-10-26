@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Activate the Python virtual environment where Deluge is setup.
+. /app/deluge-venv/bin/activate
+
 ##
 # Get some initial setup out of the way.
 ##
