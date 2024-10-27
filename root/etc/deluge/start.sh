@@ -97,7 +97,7 @@ else
 fi
 
 log "Starting Deluge"
-exec su --preserve-environment ${RUN_AS} -s /bin/bash -c "/usr/bin/deluged -d -c /config -L info -l $LOGFILE" &
+exec su --preserve-environment ${RUN_AS} -s /bin/bash -c "/app/deluge-venv/bin/deluged -d -c /config -L info -l $LOGFILE" &
 
 # wait for deluge daemon process to start (listen for port)
 while [[ $(netstat -lnt | awk '$6 == "LISTEN" && $4 ~ ".58846"') == "" ]]; do
@@ -105,7 +105,7 @@ while [[ $(netstat -lnt | awk '$6 == "LISTEN" && $4 ~ ".58846"') == "" ]]; do
 done
 
 log "Starting Deluge webui..."
-exec su --preserve-environment ${RUN_AS} -s /bin/bash -c "/usr/bin/deluge-web -c /config -L info -l $LOGFILE" &
+exec su --preserve-environment ${RUN_AS} -s /bin/bash -c "/app/deluge-venv/bin/deluge-web -c /config -L info -l $LOGFILE" &
 
 # Configure port forwarding if applicable
 if [[ -x /etc/openvpn/${OPENVPN_PROVIDER,,}/update-port.sh && -z $DISABLE_PORT_UPDATER ]]; then
