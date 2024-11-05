@@ -23,7 +23,7 @@ RUN set -ex; \
     make all && make install && cd / && rm -rf /tmp/libnatpmp && \
     echo "Set up Deluge prerequisites" && \
     mkdir -p /app/deluge-venv && python3 -m venv /app/deluge-venv && . /app/deluge-venv/bin/activate && \
-    pip3 install tox && pip3 install setuptools==62.6.0 && pip3 install twisted==22.10.0 && \
+    pip3 install wheel && pip3 install lbry-libtorrent && pip3 install tox && pip3 install setuptools==62.6.0 && pip3 install twisted==22.10.0 && \
     apt -y install python3-libtorrent python3-geoip python3-dbus python3-gi \
         python3-gi-cairo gir1.2-gtk-3.0 gir1.2-appindicator3-0.1 python3-pygame libnotify4 \
         librsvg2-common xdg-utils python3-incremental python3-typing-extensions python3-attr natpmpc && \
