@@ -20,7 +20,7 @@ RUN set -ex; \
     echo "Download, build, and install natpmpc from source" && \
     mkdir /tmp/libnatpmp && cd /tmp/libnatpmp && \
     git clone https://github.com/miniupnp/libnatpmp.git && cd libnatpmp && \
-    make all && make install && cd / && rm -rf /tmp/libnatpmp && cp -r /usr/lib64/* /usr/lib64/ \
+    make all && make install && cd / && rm -rf /tmp/libnatpmp && cp -r /usr/lib64/* /usr/lib/ \
     echo "Set up Deluge prerequisites" && \
     mkdir -p /app/deluge-venv && python3 -m venv /app/deluge-venv && . /app/deluge-venv/bin/activate && \
     pip3 install wheel && pip3 install lbry-libtorrent && pip3 install tox && pip3 install setuptools==62.6.0 && pip3 install twisted==22.10.0 && \
