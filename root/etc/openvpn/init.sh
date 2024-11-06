@@ -209,8 +209,8 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
     fi
 
     # ${VARIABLE,,} is .ToLower()
-    # if [ true = false ] && [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "$WAS_REMOTE_IP_DETECTED" != true ]; then
-    if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "$WAS_REMOTE_IP_DETECTED" != true ]; then
+    if [ true = false ] && [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "$WAS_REMOTE_IP_DETECTED" != true ]; then
+    #if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "$WAS_REMOTE_IP_DETECTED" != true ]; then
       # In order to handle ProtonVPN port forwarding+NAT, we need to use NATPMPC. For this,
       # we need the Remote IP. We can use that to establish the forwarded port.
       # With that, we'll need to force-update Deluge configuration to listen on that forwarded port.
@@ -226,6 +226,8 @@ if g is not None:
   print(g.group(1))
 ')
 
+      # TODO: natpmpc needs to be called for the gateway IP, not the actual remote IP.
+      # WE'll need to scan output until we have that, store it off, and then proceed with natpmpc.
       if [ -n "$REMOTE_IP" ]; then
         echo "Detected REMOTE_IP: $REMOTE_IP"
         TRIMMED_REMOTE_IP=$(echo "$REMOTE_IP" | cut -d: -f1)
