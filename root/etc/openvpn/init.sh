@@ -182,7 +182,6 @@ log "Starting openvpn"
 
 # Capture/relay output from `openvpn` in order to watch for completed initialization, at which point we can execute a post-initialize script.
 WAS_INITIALIZATION_COMPLETED=false
-GATEWAY_IP=""
 stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPENVPN_CONFIG}" | {
   # Once initialization is detected, there's no point to continuing to run `grep`
 
@@ -253,11 +252,11 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
   GATEWAY_IP=$(</tmp/gateway_ip)
 
   # Indicate the gateway IP and check for natpmpc compatibility
-  echo "Detected GATEWAY_IP: $GATEWAY_IP"
+  echo "Detected GATEWAY_IP: '$GATEWAY_IP'"
 
   # Setup NATPMPC using the Remote IP
   echo "Querying gateway for natpmpc compatibility..."
-  NATPMPC_GATEWAY_CHECK_RESULT=$(natpmpc -g $GATEWAY_IP)
+  NATPMPC_GATEWAY_CHECK_RESULT=$(natpmpc -g "$GATEWAY_IP")
 
   # If the gateway wasn't compatible, just exit.
   if [ "$?" != "0" ]; then
@@ -268,7 +267,7 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
   fi
 
   # Perform a test forward so we can parse the port
-  NATPMPC_UDP_FORWARD_RESULT=$(natpmpc -g $GATEWAY_IP -a 1 0 udp 60)
+  NATPMPC_UDP_FORWARD_RESULT=$(natpmpc -g "$GATEWAY_IP" -a 1 0 "udp" 60)
 
   # IF the forward failed, just exit.
   if [ "$?" != "0" ]; then
@@ -301,7 +300,7 @@ for i in sys.stdin.readlines():
   
   # Begin a background loop to keep the port active
   echo "Beginning background refresh loop for forwarded port"
-  while true ; do date ; natpmpc -a 1 0 udp 60 -g $GATEWAY_IP && natpmpc -a 1 0 tcp 60 -g $GATEWAY_IP || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
+  while true ; do date ; natpmpc -g "$GATEWAY_IP" -a 1 0 "udp" 60 && natpmpc -g "$GATEWAY_IP" -a 1 0 "tcp" 60 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
 fi
 
 # Block until we have the "initialization sequence completed" indicator
