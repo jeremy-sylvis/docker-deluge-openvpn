@@ -197,7 +197,7 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
       if [[ $MATCH -eq 0 ]]; then
         # Set our latch
         WAS_INITIALIZATION_COMPLETED=true
-        echo "$WAS_INITIALIZATION_COMPLETED" >> /tmp/gateway_initialized
+        echo "$WAS_INITIALIZATION_COMPLETED" > /tmp/gateway_initialized
 
       fi
     fi
@@ -233,7 +233,7 @@ if g is not None:
         if [ -n "$TEMP_GATEWAY_IP" ]; then
           echo "Detected gateway IP $TEMP_GATEWAY_IP"
           GATEWAY_IP=$TEMP_GATEWAY_IP
-          echo "$TEMP_GATEWAY_IP" >> /tmp/gateway_ip
+          echo "$TEMP_GATEWAY_IP" > /tmp/gateway_ip
         fi
       fi
     fi
