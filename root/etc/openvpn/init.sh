@@ -271,7 +271,7 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
   NATPMPC_UDP_FORWARD_RESULT=$(natpmpc -g $GATEWAY_IP -a 1 0 udp 60)
 
   # IF the forward failed, just exit.
-  if [ "$?" != "0"]; then
+  if [ "$?" != "0" ]; then
     echo "Failed to forward UDP port using natpmpc. Error:"
     echo "$NATPMPC_UDP_FORWARD_RESULT"
     exit 2
