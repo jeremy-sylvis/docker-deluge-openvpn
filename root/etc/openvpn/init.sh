@@ -238,7 +238,7 @@ if g is not None:
       fi
     fi
   done
-}
+} &
 
 # If using ProtonVPN, block until we've detected a gateway and can establish port forwarding
 # ${VARIABLE,,} is .ToLower()
