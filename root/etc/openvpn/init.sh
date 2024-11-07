@@ -198,7 +198,7 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
       if [[ $MATCH -eq 0 ]]; then
         # Set our latch
         WAS_INITIALIZATION_COMPLETED=true
-
+        echo "$WAS_INITIALIZATION_COMPLETED" >> /tmp/gateway_initialized
 
       fi
     fi
@@ -234,6 +234,7 @@ if g is not None:
         if [ -n "$TEMP_GATEWAY_IP" ]; then
           echo "Detected gateway IP $TEMP_GATEWAY_IP"
           GATEWAY_IP=$TEMP_GATEWAY_IP
+          echo "$TEMP_GATEWAY_IP" >> /tmp/gateway_ip
         fi
       fi
     fi
@@ -245,11 +246,12 @@ if g is not None:
 if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
   # Block until we've detected the gateway IP
   echo "Blocking until we detect a gateway IP..."
-  while [ -z "$GATEWAY_IP" ]
+  while [ ! -f /tmp/gateway_ip ]
   do
     sleep 1
   done
-  
+  GATEWAY_IP=$(</tmp/gateway_ip)
+
   # Indicate the gateway IP and check for natpmpc compatibility
   echo "Detected GATEWAY_IP: $GATEWAY_IP"
 
@@ -304,7 +306,7 @@ fi
 
 # Block until we have the "initialization sequence completed" indicator
 echo "Blocking until OpenVPN initialization is complete..."
-while [ "$WAS_INITIALIZATION_COMPLETED" != "true" ]
+while [ ! -f /tmp/gateway_initialized ]
 do
   sleep 1s
 done
