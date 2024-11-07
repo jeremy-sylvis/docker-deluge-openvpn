@@ -181,10 +181,10 @@ DELUGE_CONTROL_OPTS="--script-security 2 --up-delay --up /etc/openvpn/tunnelUp.s
 log "Starting openvpn"
 
 # Capture/relay output from `openvpn` in order to watch for completed initialization, at which point we can execute a post-initialize script.
+WAS_INITIALIZATION_COMPLETED=false
+GATEWAY_IP=""
 stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPENVPN_CONFIG}" | {
   # Once initialization is detected, there's no point to continuing to run `grep`
-  WAS_INITIALIZATION_COMPLETED=false
-  WAS_REMOTE_IP_DETECTED=false
 
   while IFS= read -r line
   do
@@ -199,64 +199,84 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
         # Set our latch
         WAS_INITIALIZATION_COMPLETED=true
 
-        if [[ -x /config/openvpn-post-init.sh ]]; then
-          echo "OpenVPN initialization complete and a post-init script was detected, executing it..."
-          /config/openvpn-post-init.sh
-        else
-          echo "OpenVPN initialization complete but no post-init script detected; skipping it..."
-        fi
+
       fi
     fi
 
     # ${VARIABLE,,} is .ToLower()
-    if [ true = false ] && [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "$WAS_REMOTE_IP_DETECTED" != true ]; then
-    #if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "$WAS_REMOTE_IP_DETECTED" != true ]; then
-      # In order to handle ProtonVPN port forwarding+NAT, we need to use NATPMPC. For this,
-      # we need the Remote IP. We can use that to establish the forwarded port.
-      # With that, we'll need to force-update Deluge configuration to listen on that forwarded port.
+    if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
+      # For ProtonVPN, we have to do some extra work.
 
-      # Scan for "Peer Connection Initiated with [AF_INET][iphere]" to fetch the remote IP
-      # Apparently this sucks at handling capture groups - use an inline python handler
-      REMOTE_IP=$(echo "$line" | python3 -c $'
+      # 1) we have to try to parse out the gateway's IP so we can use it later.
+      # 2) Then we have to test natpmpc's port forwarding using that gateway
+      # 3) then we have to establish perpetual port forward maintenance for that port and that gateway
+      # 4) finally we have to update deluge config to use the new forwarding port as a listen point
+
+      # This will boil down to a basic state machine.
+
+      # Until we've established our GATEWAY_IP, there's nothing more to do.
+      if [ -z "$GATEWAY_IP" ]; then
+        # Try to parse the current line for a gateway IP.
+
+        # Scan for line: "PUSH: Received control message: ... route-gateway 10.96.0.1,...'"
+        # The key part is route-gateway [gateway-ip]
+        # Apparently this sucks at handling capture groups - use an inline python handler
+        TEMP_GATEWAY_IP=$(echo "$line" | python3 -c $"
 import re
 import sys
 line=sys.stdin.read().rstrip()
-g=re.match(r\'^.*Peer Connection Initiated with \[AF_INET\](.*)$\',line)
+g=re.match(r'^.*route-gateway ([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}).*$',line)
 if g is not None:
   print(g.group(1))
-')
+")
 
-      # TODO: natpmpc needs to be called for the gateway IP, not the actual remote IP.
-      # WE'll need to scan output until we have that, store it off, and then proceed with natpmpc.
-      if [ -n "$REMOTE_IP" ]; then
-        echo "Detected REMOTE_IP: $REMOTE_IP"
-        TRIMMED_REMOTE_IP=$(echo "$REMOTE_IP" | cut -d: -f1)
-        #echo "Trimmed remote IP: $TRIMMED_REMOTE_IP"
-
-        # Setup NATPMPC using the Remote IP
-        echo "Querying gateway for natpmpc compatibility..."
-        NATPMPC_GATEWAY_CHECK_RESULT=$(natpmpc -g $TRIMMED_REMOTE_IP)
-
-        # If the gateway wasn't compatible, just exit.
-        if [ "$?" != "0" ]; then
-          echo "Gateway is not compatible with natpmpc. Error:"
-          echo $NATPMPC_GATEWAY_CHECK_RESULT
-          exit 1
+        # If we got a result, update it.
+        if [ -n "$TEMP_GATEWAY_IP" ]; then
+          echo "Detected gateway IP $TEMP_GATEWAY_IP"
+          GATEWAY_IP=$TEMP_GATEWAY_IP
         fi
+      fi
+    fi
+  done
+}
 
-        NATPMPC_UDP_FORWARD_RESULT=$(natpmpc -g $TRIMMED_REMOTE_IP -a 1 0 udp 60)
+# If using ProtonVPN, block until we've detected a gateway and can establish port forwarding
+# ${VARIABLE,,} is .ToLower()
+if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
+  # Block until we've detected the gateway IP
+  echo "Blocking until we detect a gateway IP..."
+  while [ -z "$GATEWAY_IP" ]
+  do
+    sleep 1
+  done
+  
+  # Indicate the gateway IP and check for natpmpc compatibility
+  echo "Detected GATEWAY_IP: $GATEWAY_IP"
 
-        echo $NATPMPC_UDP_FORWARD_RESULT
+  # Setup NATPMPC using the Remote IP
+  echo "Querying gateway for natpmpc compatibility..."
+  NATPMPC_GATEWAY_CHECK_RESULT=$(natpmpc -g $GATEWAY_IP)
 
-        # IF the forward failed, just exit.
-        if [ "$?" != "0"]; then
-          echo "Failed to forward UDP port using natpmpc. Error:"
-          echo "$NATPMPC_UDP_FORWARD_RESULT"
-          exit 2
-        fi
+  # If the gateway wasn't compatible, just exit.
+  if [ "$?" != "0" ]; then
+    echo "Gateway is not compatible with natpmpc. Error:"
+    echo $NATPMPC_GATEWAY_CHECK_RESULT
+    echo "Ensure the selected ProtonVPN server profile supports p2p and the '+nr' option and 'b+n' option is not specified in your username."
+    exit 1
+  fi
 
-        # Parse the result for the port being forwarded
-        NATPMPC_FORWARDED_PORT=$(echo $NATPMPC_UDP_FORWARD_RESULT | python3 -c $'
+  # Perform a test forward so we can parse the port
+  NATPMPC_UDP_FORWARD_RESULT=$(natpmpc -g $GATEWAY_IP -a 1 0 udp 60)
+
+  # IF the forward failed, just exit.
+  if [ "$?" != "0"]; then
+    echo "Failed to forward UDP port using natpmpc. Error:"
+    echo "$NATPMPC_UDP_FORWARD_RESULT"
+    exit 2
+  fi
+
+  # Parse the result for the port being forwarded
+  NATPMPC_FORWARDED_PORT=$(echo $NATPMPC_UDP_FORWARD_RESULT | python3 -c $'
 import re
 import sys
 for i in sys.stdin.readlines():
@@ -266,20 +286,33 @@ for i in sys.stdin.readlines():
     print(g.group(1))
 ')
 
-        if [ -z "$NATPMPC_FORWARDED_PORT" ]; then
-          echo "Failed to parse forwarded port. Output:"
-          echo $NATPMPC_UDP_FORWARD_RESULT
-          exit 3
-        fi
+  if [ -z "$NATPMPC_FORWARDED_PORT" ]; then
+    echo "Failed to parse forwarded UDP port."
+    echo "Forward result:"
+    echo "$NATPMPC_UDP_FORWARD_RESULT"
+    exit 3
+  fi
 
-        # Update Deluge config with this new port
-        # TBD
-        
-        # Begin a background loop to keep the port active
-        # TBD
+  # Update Deluge config with this new port
+  echo "Updating Deluge config to listen on forwarded UDP port $NATPMPC_UDP_FORWARD_RESULT"
+  sed -i -E "s#.*listen_ports.*#    \"listen_ports\": \[ $NATPMPC_FORWARDED_PORT \],\n" "/etc/config/core.conf"
+  
+  # Begin a background loop to keep the port active
+  echo "Beginning background refresh loop for forwarded port"
+  while true ; do date ; natpmpc -a 1 0 udp 60 -g $GATEWAY_IP && natpmpc -a 1 0 tcp 60 -g $GATEWAY_IP || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
+fi
 
-        WAS_REMOTE_IP_DETECTED=true
-      fi
-    fi
-  done
-}
+# Block until we have the "initialization sequence completed" indicator
+echo "Blocking until OpenVPN initialization is complete..."
+while [ "$WAS_INITIALIZATION_COMPLETED" != "true" ]
+do
+  sleep 1s
+done
+
+# Now that initialization is complete, execute the post-init script
+if [[ -x /config/openvpn-post-init.sh ]]; then
+  echo "OpenVPN initialization complete and a post-init script was detected, executing it..."
+  /config/openvpn-post-init.sh
+else
+  echo "OpenVPN initialization complete but no post-init script detected; skipping it..."
+fi
