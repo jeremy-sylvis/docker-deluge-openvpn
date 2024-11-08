@@ -277,7 +277,7 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
   fi
 
   # Parse the result for the port being forwarded
-  NATPMPC_FORWARDED_PORT=$(echo $NATPMPC_UDP_FORWARD_RESULT | python3 -c $'
+  NATPMPC_FORWARDED_PORT=$(echo "$NATPMPC_UDP_FORWARD_RESULT" | python3 -c $'
 import re
 import sys
 for i in sys.stdin.readlines():
