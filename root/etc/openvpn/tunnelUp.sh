@@ -68,51 +68,66 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
 
   # Setup NATPMPC using the Remote IP
   echo "Querying gateway for natpmpc compatibility..."
-  NATPMPC_GATEWAY_CHECK_RESULT=$(natpmpc -g "$GATEWAY_IP")
+  NATPMPC_GATEWAY_CHECK_RESULT=$()
+
+  stdbuf -oL natpmpc -g "$GATEWAY_IP" | {
+    # Once initialization is detected, there's no point to continuing to run `grep`
+    while IFS= read -r line
+    do
+      # Pass-through captured output
+      echo "$line"
+    done
+  } 
 
   # If the gateway wasn't compatible, just exit.
   if [ "$?" != "0" ]; then
-    echo "Gateway is not compatible with natpmpc. Error:"
-    echo $NATPMPC_GATEWAY_CHECK_RESULT
-    echo "Ensure the selected ProtonVPN server profile supports p2p and the '+nr' option and 'b+n' option is not specified in your username."
+    echo "Gateway is not compatible with natpmpc. Ensure the selected ProtonVPN server profile supports p2p and the '+nr' option and 'b+n' option is not specified in your username."
     exit 1
   fi
 
   # Perform a test forward so we can parse the port
-  NATPMPC_UDP_FORWARD_RESULT=$(natpmpc -g "$GATEWAY_IP" -a 1 0 "udp" 60)
+  NATPMPC_FORWARDED_PORT=''
+  stdbuf -oL natpmpc -g "$GATEWAY_IP" -a 1 0 "udp" 60 | {
+    while IFS= read -r line
+    do
+      # Pass-through captured output
+      echo "$line"
 
-  # IF the forward failed, just exit.
-  if [ "$?" != "0" ]; then
-    echo "Failed to forward UDP port using natpmpc. Error:"
-    echo "$NATPMPC_UDP_FORWARD_RESULT"
-    exit 2
-  fi
-
-  # Parse the result for the port being forwarded
-  NATPMPC_FORWARDED_PORT=$(echo "$NATPMPC_UDP_FORWARD_RESULT" | python3 -c $'
+      TEMP_NATPMPC_FORWARDED_PORT=$(echo "$line" | python3 -c $'
 import re
 import sys
 for i in sys.stdin.readlines():
-  i=i.rstrip()
-  g=re.match(r\'Mapped public port ([0-9]{1,5}).*\',i)
-  if g is not None:
-    print(g.group(1))
+i=i.rstrip()
+g=re.match(r\'Mapped public port ([0-9]{1,5}).*\',i)
+if g is not None:
+print(g.group(1))
 ')
+      if [ ! -z "$TEMP_NATPMPC_FORWARDED_PORT" ]; then
+        echo "Detected forwarded port '$TEMP_NATPMPC_FORWARDED_PORT'."
+        NATPMPC_FORWARDED_PORT="$TEMP_NATPMPC_FORWARDED_PORT"
+      fi
+      
+    done
+  } 
+
+  # IF the forward failed, just exit.
+  if [ "$?" != "0" ]; then
+    echo "Failed to forward UDP port using natpmpc."
+    exit 2
+  fi
 
   if [ -z "$NATPMPC_FORWARDED_PORT" ]; then
     echo "Failed to parse forwarded UDP port."
-    echo "Forward result:"
-    echo "$NATPMPC_UDP_FORWARD_RESULT"
     exit 3
   fi
 
   # Update Deluge config with this new port
   # sed: -e expression #1, char 53: unterminated `s' command
-  echo "Updating Deluge config to listen on forwarded UDP port $NATPMPC_UDP_FORWARD_RESULT"
+  echo "Updating Deluge config to listen on forwarded UDP port '$NATPMPC_FORWARDED_PORT'..."
   sed -i -E "s/.*listen_ports.*/    \"listen_ports\": \[ $NATPMPC_FORWARDED_PORT \],\n/" "/etc/config/core.conf"
   
   # Begin a background loop to keep the port active
-  echo "Beginning background refresh loop for forwarded port"
+  echo "Beginning background refresh loop for forwarded port..."
   while true ; do date ; natpmpc -g "$GATEWAY_IP" -a 1 0 "udp" 60 && natpmpc -g "$GATEWAY_IP" -a 1 0 "tcp" 60 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
 fi
 
