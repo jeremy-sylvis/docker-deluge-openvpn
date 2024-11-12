@@ -70,14 +70,25 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
   echo "Querying gateway for natpmpc compatibility..."
   NATPMPC_GATEWAY_CHECK_RESULT=$()
 
-  stdbuf -oL natpmpc -g "$GATEWAY_IP" | {
-    # Once initialization is detected, there's no point to continuing to run `grep`
-    while IFS= read -r line
-    do
-      # Pass-through captured output
-      echo "$line"
-    done
-  } 
+  # We need to be able to handle the "readnatpmpresponseorretry returned -100 (TRY AGAIN)" messages in a loop and to block until success.
+  QUERY_SUCCESS="false"
+  while [ "$QUERY_SUCCESS" != "true" ]
+  do
+    stdbuf -oL natpmpc -g "$GATEWAY_IP" | {
+      # Once initialization is detected, there's no point to continuing to run `grep`
+      while IFS= read -r line
+      do
+        # Pass-through captured output
+        echo "$line"
+
+        echo "$line" | grep --quiet -P '^.*(readnatpmpresponseorretry returned).*\(SUCCESS\).*$'
+        MATCH=$?
+        if [[ $MATCH -eq 0 ]]; then
+          QUERY_SUCCESS="true"
+        fi
+      done
+    }
+  done
 
   # If the gateway wasn't compatible, just exit.
   if [ "$?" != "0" ]; then
@@ -97,10 +108,10 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
 import re
 import sys
 for i in sys.stdin.readlines():
-i=i.rstrip()
-g=re.match(r\'Mapped public port ([0-9]{1,5}).*\',i)
-if g is not None:
-print(g.group(1))
+  i=i.rstrip()
+  g=re.match(r\'Mapped public port ([0-9]{1,5}).*\',i)
+  if g is not None:
+    print(g.group(1))
 ')
       if [ ! -z "$TEMP_NATPMPC_FORWARDED_PORT" ]; then
         echo "Detected forwarded port '$TEMP_NATPMPC_FORWARDED_PORT'."
