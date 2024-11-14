@@ -11,8 +11,8 @@ if [ -z "$VPN_PROVIDER_HOME" ]; then
     echo "ERROR: Need to have VPN_PROVIDER_HOME set to call this script" && exit 1
 fi
 
-# Delete all files for PIA provider, except scripts
-find "$VPN_PROVIDER_HOME" -type f ! -name "*.sh" -delete
+# Delete all files for ProtonVPN provider, except scripts
+# find "$VPN_PROVIDER_HOME" -type f ! -name "*.sh" -delete
 
 # Copy in static configs
 cp -v /etc/openvpn/protonvpn/*.ovpn $VPN_PROVIDER_HOME/
