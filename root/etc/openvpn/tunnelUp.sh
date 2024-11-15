@@ -54,7 +54,7 @@ fi
 # If using ProtonVPN, block until we've detected a gateway and can establish port forwarding
 # most of this will have to move to `tunnelUp.sh`
 # ${VARIABLE,,} is .ToLower()
-if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" && "${OPENVPN_PROTONVPN_NATPMPC,,}" = "true" ]; then
+if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,}" = "true" ]; then
   # Block until we've detected the gateway IP
   echo "Blocking until we detect a gateway IP..."
   while [ ! -f /tmp/gateway_ip ]
