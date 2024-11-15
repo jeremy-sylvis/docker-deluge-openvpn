@@ -137,7 +137,6 @@ for i in sys.stdin.readlines():
   fi
 
   # Update Deluge config with this new port
-  # sed: -e expression #1, char 53: unterminated `s' command
   echo "Updating Deluge config to listen on forwarded UDP port '$NATPMPC_FORWARDED_PORT'..."
   sed -i -E "s/.*listen_ports.*/    \"listen_ports\": \[ $NATPMPC_FORWARDED_PORT \],\n/" "/etc/config/core.conf"
   
