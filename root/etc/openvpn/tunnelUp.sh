@@ -63,6 +63,10 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" && "${OPENVPN_PROTONVPN_NATPMPC,,}" =
   done
   GATEWAY_IP=$(</tmp/gateway_ip)
 
+  # override the IP for testing
+  echo "Overwriting gateway IP..."
+  GATEWAY_IP="10.2.0.1"
+
   # Indicate the gateway IP and check for natpmpc compatibility
   echo "Detected GATEWAY_IP: '$GATEWAY_IP'"
 
@@ -98,7 +102,7 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" && "${OPENVPN_PROTONVPN_NATPMPC,,}" =
 
   # Perform a test forward so we can parse the port
   NATPMPC_FORWARDED_PORT=''
-  stdbuf -oL natpmpc -g "$GATEWAY_IP" -a 1 0 "udp" 60 | {
+  stdbuf -oL natpmpc -g "$GATEWAY_IP" -a 0 0 "udp" 60 | {
     while IFS= read -r line
     do
       # Pass-through captured output
@@ -139,7 +143,7 @@ for i in sys.stdin.readlines():
   
   # Begin a background loop to keep the port active
   echo "Beginning background refresh loop for forwarded port..."
-  while true ; do date ; natpmpc -g "$GATEWAY_IP" -a 1 0 "udp" 60 && natpmpc -g "$GATEWAY_IP" -a 1 0 "tcp" 60 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
+  while true ; do date ; natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" 0 "udp" 60 && natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" 0 "tcp" 60 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
 fi
 
 # Block until we have the "initialization sequence completed" indicator
