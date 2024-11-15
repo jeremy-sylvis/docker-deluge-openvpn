@@ -239,3 +239,18 @@ if g is not None:
     fi
   done
 }
+
+# Block until we have the "initialization sequence completed" indicator
+echo "Blocking until OpenVPN initialization is complete..."
+while [ ! -f /tmp/gateway_initialized ]
+do
+  sleep 1s
+done
+
+# Now that initialization is complete, execute the post-init script
+if [[ -x /config/openvpn-post-init.sh ]]; then
+  echo "OpenVPN initialization complete and a post-init script was detected, executing it..."
+  /config/openvpn-post-init.sh
+else
+  echo "OpenVPN initialization complete but no post-init script detected; skipping it..."
+fi

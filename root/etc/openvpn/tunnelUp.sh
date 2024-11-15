@@ -54,7 +54,7 @@ fi
 # If using ProtonVPN, block until we've detected a gateway and can establish port forwarding
 # most of this will have to move to `tunnelUp.sh`
 # ${VARIABLE,,} is .ToLower()
-if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,}" = "true" ]; then
+if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,}" != "true" ]; then
   # Block until we've detected the gateway IP
   echo "Blocking until we detect a gateway IP..."
   while [ ! -f /tmp/gateway_ip ]
@@ -143,21 +143,6 @@ for i in sys.stdin.readlines():
   # Begin a background loop to keep the port active
   echo "Beginning background refresh loop for forwarded port..."
   while true ; do date ; natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" 0 "udp" 60 && natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" 0 "tcp" 60 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
-fi
-
-# Block until we have the "initialization sequence completed" indicator
-echo "Blocking until OpenVPN initialization is complete..."
-while [ ! -f /tmp/gateway_initialized ]
-do
-  sleep 1s
-done
-
-# Now that initialization is complete, execute the post-init script
-if [[ -x /config/openvpn-post-init.sh ]]; then
-  echo "OpenVPN initialization complete and a post-init script was detected, executing it..."
-  /config/openvpn-post-init.sh
-else
-  echo "OpenVPN initialization complete but no post-init script detected; skipping it..."
 fi
 
 /etc/deluge/start.sh "$@"
