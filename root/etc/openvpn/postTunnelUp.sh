@@ -4,6 +4,8 @@
 # This can execute anything which needs to wait until the tunnel is fully established and operational.
 echo "Beginning OpenVPN post-Tunnel Up process..."
 
+. /etc/deluge/environment-variables.sh
+
 # If using ProtonVPN, block until we've detected a gateway and can establish port forwarding
 # most of this will have to move to `tunnelUp.sh`
 # ${VARIABLE,,} is .ToLower()
@@ -88,6 +90,6 @@ for i in sys.stdin.readlines():
 fi
 
 echo "Launching Deluge..."
-/etc/deluge/start.sh "$@"
+/etc/deluge/start.sh "$@" & disown /etc/deluge/start.sh
 
 echo "Completed OpenVPN post-Tunnel Up process."
