@@ -55,7 +55,7 @@ fi
 
 # Launch our postTunnelUp and immediately disown it so it survives script exit
 echo "Launching OpenVPN post-Tunnel Up process..."
-/etc/openvpn/postTunnelUp.sh "$@" & disown /etc/openvpn/postTunnelUp.sh
+/etc/openvpn/postTunnelUp.sh "$@" & disown -h /etc/openvpn/postTunnelUp.sh
 
 echo "Completed OpenVPN Tunnel Up process."
 exit 0

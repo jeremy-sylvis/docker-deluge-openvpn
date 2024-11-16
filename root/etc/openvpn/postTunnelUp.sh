@@ -90,6 +90,6 @@ for i in sys.stdin.readlines():
 fi
 
 echo "Launching Deluge..."
-/etc/deluge/start.sh "$@" & disown /etc/deluge/start.sh
+/etc/deluge/start.sh "$@" & disown -h /etc/deluge/start.sh
 
 echo "Completed OpenVPN post-Tunnel Up process."
