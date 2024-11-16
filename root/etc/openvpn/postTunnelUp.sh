@@ -2,20 +2,26 @@
 
 # This is intended to execute _after_ OpenVPN's "--up" script which executes as the final stage of opening a tunnel.
 # This can execute anything which needs to wait until the tunnel is fully established and operational.
-echo "Beginning OpenVPN post-Tunnel Up process..."
 
 . /etc/deluge/environment-variables.sh
+
+TIMESTAMP_FORMAT='%a %b %d %T %Y'
+log() {
+  echo "$(date +"${TIMESTAMP_FORMAT}") [start-vpn] $*"
+}
+
+log "Beginning OpenVPN post-Tunnel Up process..."
 
 # If using ProtonVPN, block until we've detected a gateway and can establish port forwarding
 # most of this will have to move to `tunnelUp.sh`
 # ${VARIABLE,,} is .ToLower()
 if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,}" == "true" ]; then
   # override the IP for testing
-  echo "Overwriting gateway IP..."
+  log "Overwriting gateway IP..."
   GATEWAY_IP="10.2.0.1"
 
   # Setup NATPMPC using the Remote IP
-  echo "Querying gateway for natpmpc compatibility..."
+  log "Querying gateway for natpmpc compatibility..."
   NATPMPC_GATEWAY_CHECK_RESULT=$()
 
   # We need to be able to handle the "readnatpmpresponseorretry returned -100 (TRY AGAIN)" messages in a loop and to block until success.
@@ -40,7 +46,7 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,
 
   # If the gateway wasn't compatible, just exit.
   if [ "$?" != "0" ]; then
-    echo "Gateway is not compatible with natpmpc. Ensure the selected ProtonVPN server profile supports p2p and the '+nr' option and 'b+n' option is not specified in your username."
+    log "Gateway is not compatible with natpmpc. Ensure the selected ProtonVPN server profile supports p2p and the '+nr' option and 'b+n' option is not specified in your username."
     exit 1
   fi
 
@@ -62,7 +68,7 @@ for i in sys.stdin.readlines():
     print(g.group(1))
 ')
       if [ ! -z "$TEMP_NATPMPC_FORWARDED_PORT" ]; then
-        echo "Detected forwarded port '$TEMP_NATPMPC_FORWARDED_PORT'."
+        log "Detected forwarded port '$TEMP_NATPMPC_FORWARDED_PORT'."
         NATPMPC_FORWARDED_PORT="$TEMP_NATPMPC_FORWARDED_PORT"
       fi
       
@@ -71,25 +77,25 @@ for i in sys.stdin.readlines():
 
   # IF the forward failed, just exit.
   if [ "$?" != "0" ]; then
-    echo "Failed to forward UDP port using natpmpc."
+    log "Failed to forward UDP port using natpmpc."
     exit 2
   fi
 
   if [ -z "$NATPMPC_FORWARDED_PORT" ]; then
-    echo "Failed to parse forwarded UDP port."
+    log "Failed to parse forwarded UDP port."
     exit 3
   fi
 
   # Update Deluge config with this new port
-  echo "Updating Deluge config to listen on forwarded UDP port '$NATPMPC_FORWARDED_PORT'..."
+  log "Updating Deluge config to listen on forwarded UDP port '$NATPMPC_FORWARDED_PORT'..."
   sed -i -E "s/.*listen_ports.*/    \"listen_ports\": \[ $NATPMPC_FORWARDED_PORT \],\n/" "/etc/config/core.conf"
   
   # Begin a background loop to keep the port active
-  echo "Beginning background refresh loop for forwarded port..."
+  log "Beginning background refresh loop for forwarded port..."
   while true ; do date ; natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" 0 "udp" 60 && natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" 0 "tcp" 60 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
 fi
 
-echo "Launching Deluge..."
+log "Launching Deluge..."
 /etc/deluge/start.sh "$@" & disown -h /etc/deluge/start.sh
 
-echo "Completed OpenVPN post-Tunnel Up process."
+log "Completed OpenVPN post-Tunnel Up process."

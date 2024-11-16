@@ -1,8 +1,13 @@
 #!/bin/bash
 
-echo "Beginning OpenVPN Tunnel Up process..."
-
 . /etc/deluge/environment-variables.sh
+
+TIMESTAMP_FORMAT='%a %b %d %T %Y'
+log() {
+  echo "$(date +"${TIMESTAMP_FORMAT}") [start-vpn] $*"
+}
+
+log "Beginning OpenVPN Tunnel Up process..."
 
 if [[ "${PEER_DNS,,}" == "true" ]]; then
         NS=
@@ -54,8 +59,8 @@ if [[ "${PEER_DNS,,}" == "true" ]]; then
 fi
 
 # Launch our postTunnelUp and immediately disown it so it survives script exit
-echo "Launching OpenVPN post-Tunnel Up process..."
+log "Launching OpenVPN post-Tunnel Up process..."
 /etc/openvpn/postTunnelUp.sh "$@" & disown -h /etc/openvpn/postTunnelUp.sh
 
-echo "Completed OpenVPN Tunnel Up process."
+log "Completed OpenVPN Tunnel Up process."
 exit 0
