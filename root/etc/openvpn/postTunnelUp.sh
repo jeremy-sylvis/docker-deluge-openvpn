@@ -1,5 +1,9 @@
 #!/bin/bash
 
+. /etc/deluge/environment-variables.sh
+# Activate the Python virtual environment where Deluge is setup.
+. /app/deluge-venv/bin/activate
+
 # This is intended to execute _after_ OpenVPN's "--up" script which executes as the final stage of opening a tunnel.
 # This can execute anything which needs to wait until the tunnel is fully established and operational.
 

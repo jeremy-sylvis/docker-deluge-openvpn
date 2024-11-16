@@ -51,6 +51,8 @@ if [[ "${PEER_DNS,,}" == "true" ]]; then
         fi
 fi
 
-nohup /etc/openvpn/postTunnelUp.sh &
+# Launch our postTunnelUp and immediately disown it so it survives script exit
+/etc/openvpn/postTunnelUp.sh
+disown
 
 exit 0
