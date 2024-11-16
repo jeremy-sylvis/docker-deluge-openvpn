@@ -198,47 +198,10 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
         # Set our latch
         WAS_INITIALIZATION_COMPLETED=true
         echo "$WAS_INITIALIZATION_COMPLETED" > /tmp/gateway_initialized
-
-      fi
-    fi
-
-    # ${VARIABLE,,} is .ToLower()
-    if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ]; then
-      # For ProtonVPN, we have to do some extra work.
-
-      # 1) we have to try to parse out the gateway's IP so we can use it later.
-      # 2) Then we have to test natpmpc's port forwarding using that gateway
-      # 3) then we have to establish perpetual port forward maintenance for that port and that gateway
-      # 4) finally we have to update deluge config to use the new forwarding port as a listen point
-
-      # This will boil down to a basic state machine.
-
-      # Until we've established our GATEWAY_IP, there's nothing more to do.
-      if [ -z "$GATEWAY_IP" ]; then
-        # Try to parse the current line for a gateway IP.
-
-        # Scan for line: "PUSH: Received control message: ... route-gateway 10.96.0.1,...'"
-        # The key part is route-gateway [gateway-ip]
-        # Apparently this sucks at handling capture groups - use an inline python handler
-        TEMP_GATEWAY_IP=$(echo "$line" | python3 -c $"
-import re
-import sys
-line=sys.stdin.read().rstrip()
-g=re.match(r'^.*route-gateway ([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}).*$',line)
-if g is not None:
-  print(g.group(1))
-")
-
-        # If we got a result, update it.
-        if [ -n "$TEMP_GATEWAY_IP" ]; then
-          echo "Detected gateway IP $TEMP_GATEWAY_IP"
-          GATEWAY_IP=$TEMP_GATEWAY_IP
-          echo "$TEMP_GATEWAY_IP" > /tmp/gateway_ip
-        fi
       fi
     fi
   done
-}
+} &
 
 # Block until we have the "initialization sequence completed" indicator
 echo "Blocking until OpenVPN initialization is complete..."

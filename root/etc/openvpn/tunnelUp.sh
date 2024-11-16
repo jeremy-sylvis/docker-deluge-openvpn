@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Beginning OpenVPN Tunnel Up process..."
+
 . /etc/deluge/environment-variables.sh
 
 if [[ "${PEER_DNS,,}" == "true" ]]; then
@@ -52,7 +54,8 @@ if [[ "${PEER_DNS,,}" == "true" ]]; then
 fi
 
 # Launch our postTunnelUp and immediately disown it so it survives script exit
-/etc/openvpn/postTunnelUp.sh
-disown
+echo "Launching OpenVPN post-Tunnel Up process..."
+/etc/openvpn/postTunnelUp.sh & disown /etc/openvpn/postTunnelUp.sh
 
+echo "Completed OpenVPN Tunnel Up process."
 exit 0

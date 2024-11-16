@@ -2,25 +2,15 @@
 
 # This is intended to execute _after_ OpenVPN's "--up" script which executes as the final stage of opening a tunnel.
 # This can execute anything which needs to wait until the tunnel is fully established and operational.
+echo "Beginning OpenVPN post-Tunnel Up process..."
 
 # If using ProtonVPN, block until we've detected a gateway and can establish port forwarding
 # most of this will have to move to `tunnelUp.sh`
 # ${VARIABLE,,} is .ToLower()
 if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,}" == "true" ]; then
-  # Block until we've detected the gateway IP
-  echo "Blocking until we detect a gateway IP..."
-  while [ ! -f /tmp/gateway_ip ]
-  do
-    sleep 1
-  done
-  GATEWAY_IP=$(</tmp/gateway_ip)
-
   # override the IP for testing
   echo "Overwriting gateway IP..."
   GATEWAY_IP="10.2.0.1"
-
-  # Indicate the gateway IP and check for natpmpc compatibility
-  echo "Detected GATEWAY_IP: '$GATEWAY_IP'"
 
   # Setup NATPMPC using the Remote IP
   echo "Querying gateway for natpmpc compatibility..."
@@ -97,4 +87,7 @@ for i in sys.stdin.readlines():
   while true ; do date ; natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" 0 "udp" 60 && natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" 0 "tcp" 60 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
 fi
 
+echo "Launching Deluge..."
 /etc/deluge/start.sh "$@"
+
+echo "Completed OpenVPN post-Tunnel Up process."
