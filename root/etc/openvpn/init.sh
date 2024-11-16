@@ -202,7 +202,10 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
       fi
     fi
   done
-} &
+
+  # Hypothetically, if we get to this point, we're out of output - there are no more lines; stdbuf is done; openvpn is done.
+  echo "true" > /tmp/openvpn_exited
+}
 
 # Block until we have the "initialization sequence completed" indicator
 log "Blocking until OpenVPN initialization is complete..."
@@ -220,3 +223,9 @@ else
 fi
 
 log "Initialization complete."
+
+# Block until OpenPVN has exited. The original script design assumed OpenVPN was a long-lived command and would block.
+while [ ! -f /tmp/openvpn_exited ]
+do
+  sleep 10s
+done
