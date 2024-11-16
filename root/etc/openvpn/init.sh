@@ -20,14 +20,14 @@ fi
 
 # If openvpn-pre-start.sh exists, run it
 if [[ -x /scripts/openvpn-pre-start.sh ]]; then
-  echo "Executing /scripts/openvpn-pre-start.sh"
+  log "Executing /scripts/openvpn-pre-start.sh"
   /scripts/openvpn-pre-start.sh "$@"
-  echo "/scripts/openvpn-pre-start.sh returned $?"
+  log "/scripts/openvpn-pre-start.sh returned $?"
 fi
 
 # Allow for overriding the DNS used directly in the /etc/resolv.conf
 if compgen -e | grep -q "OVERRIDE_DNS"; then
-  echo "One or more OVERRIDE_DNS addresses found. Will use them to overwrite /etc/resolv.conf"
+  log "One or more OVERRIDE_DNS addresses found. Will use them to overwrite /etc/resolv.conf"
   echo "" >/etc/resolv.conf
   for var in $(compgen -e | grep "OVERRIDE_DNS"); do
     echo "nameserver $(printenv "$var")" >>/etc/resolv.conf
@@ -36,7 +36,7 @@ fi
 
 # Test DNS resolution
 if ! nslookup ${HEALTH_CHECK_HOST:-"google.com"} 1>/dev/null 2>&1; then
-  echo "WARNING: initial DNS resolution test failed"
+  log "WARNING: initial DNS resolution test failed"
 fi
 
 log "Configuring OPENVPN"
@@ -78,14 +78,14 @@ if [[ -z ${CHOSEN_OPENVPN_CONFIG} ]]; then
   VPN_CONFIG_SOURCE="${VPN_CONFIG_SOURCE:-auto}"
   VPN_CONFIG_SOURCE="${VPN_CONFIG_SOURCE,,}" # to lowercase
 
-  echo "Running with VPN_CONFIG_SOURCE ${VPN_CONFIG_SOURCE}"
+  log "Running with VPN_CONFIG_SOURCE ${VPN_CONFIG_SOURCE}"
 
   if [[ "${VPN_CONFIG_SOURCE}" == "auto" ]]; then
     if [[ -x $VPN_PROVIDER_HOME/configure-openvpn.sh ]]; then
-      echo "Provider ${VPN_PROVIDER^^} has a bundled setup script. Defaulting to internal config"
+      log "Provider ${VPN_PROVIDER^^} has a bundled setup script. Defaulting to internal config"
       VPN_CONFIG_SOURCE=internal
     else
-      echo "No bundled config script found for ${VPN_PROVIDER^^}. Defaulting to external config"
+      log "No bundled config script found for ${VPN_PROVIDER^^}. Defaulting to external config"
       VPN_CONFIG_SOURCE=external
     fi
   fi
@@ -96,7 +96,7 @@ if [[ -z ${CHOSEN_OPENVPN_CONFIG} ]]; then
   fi
 
   if [[ -x $VPN_PROVIDER_HOME/configure-openvpn.sh ]]; then
-    echo "Executing setup script for $OPENVPN_PROVIDER"
+    log "Executing setup script for $OPENVPN_PROVIDER"
     # Preserve $PWD in case it changes when sourcing the script
     pushd -n "$PWD" >/dev/null
     # shellcheck source=/dev/null
@@ -150,9 +150,9 @@ fi
 
 # If openvpn-post-config.sh exists, run it
 if [[ -x /scripts/openvpn-post-config.sh ]]; then
-  echo "Executing /scripts/openvpn-post-config.sh"
+  log "Executing /scripts/openvpn-post-config.sh"
   /scripts/openvpn-post-config.sh "$CHOSEN_OPENVPN_CONFIG"
-  echo "/scripts/openvpn-post-config.sh returned $?"
+  log "/scripts/openvpn-post-config.sh returned $?"
 fi
 
 # add OpenVPN user/pass
@@ -204,7 +204,7 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
 } &
 
 # Block until we have the "initialization sequence completed" indicator
-echo "Blocking until OpenVPN initialization is complete..."
+log "Blocking until OpenVPN initialization is complete..."
 while [ ! -f /tmp/gateway_initialized ]
 do
   sleep 1s
@@ -212,8 +212,10 @@ done
 
 # Now that initialization is complete, execute the post-init script
 if [[ -x /config/openvpn-post-init.sh ]]; then
-  echo "OpenVPN initialization complete and a post-init script was detected, executing it..."
+  log "OpenVPN initialization complete and a post-init script was detected, executing it..."
   /config/openvpn-post-init.sh
 else
-  echo "OpenVPN initialization complete but no post-init script detected; skipping it..."
+  log "OpenVPN initialization complete but no post-init script detected; skipping it..."
 fi
+
+log "Initialization complete."
