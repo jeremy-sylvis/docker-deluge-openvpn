@@ -198,7 +198,6 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
         # Set our latch
         WAS_INITIALIZATION_COMPLETED=true
         echo "$WAS_INITIALIZATION_COMPLETED" > /tmp/gateway_initialized
-        break
       fi
     fi
   done
