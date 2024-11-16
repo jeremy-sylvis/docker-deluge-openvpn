@@ -178,7 +178,7 @@ python3 /etc/openvpn/persistEnvironment.py /etc/deluge/environment-variables.sh
 
 DELUGE_CONTROL_OPTS="--script-security 2 --up-delay --up /etc/openvpn/tunnelUp.sh --down /etc/openvpn/tunnelDown.sh"
 # shellcheck disable=SC2086
-log "Starting openvpn"
+log "Starting openvpn with Deluge control flags '$DELUGE_CONTROL_OPTS' and environment control flags '$OPENVPN_OPTS'..."
 
 # Capture/relay output from `openvpn` in order to watch for completed initialization, at which point we can execute a post-initialize script.
 WAS_INITIALIZATION_COMPLETED=false
@@ -198,6 +198,7 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
         # Set our latch
         WAS_INITIALIZATION_COMPLETED=true
         echo "$WAS_INITIALIZATION_COMPLETED" > /tmp/gateway_initialized
+        break
       fi
     fi
   done
