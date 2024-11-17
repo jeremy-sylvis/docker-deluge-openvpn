@@ -22,11 +22,9 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,
 
   # Setup NATPMPC using the Remote IP
   log "Querying gateway for natpmpc compatibility..."
-  NATPMPC_GATEWAY_CHECK_RESULT=$()
 
   # We need to be able to handle the "readnatpmpresponseorretry returned -100 (TRY AGAIN)" messages in a loop and to block until success.
-  QUERY_SUCCESS="false"
-  while [ "$QUERY_SUCCESS" != "true" ]
+  while [ ! -f /tmp/natpmpc_query_success ]
   do
     stdbuf -oL natpmpc -g "$GATEWAY_IP" | {
       # Once initialization is detected, there's no point to continuing to run `grep`
@@ -38,8 +36,11 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,
         #readnatpmpresponseorretry returned 0 (OK)
         echo "$line" | grep --quiet -P '^.*(readnatpmpresponseorretry returned 0).*$'
         MATCH=$?
+        #echo "Match status: $MATCH"
         if [[ $MATCH -eq 0 ]]; then
-          QUERY_SUCCESS="true"
+          log "natpmpc query was successful."
+          echo "true" > /tmp/natpmpc_query_success
+          break
         fi
       done
     }
@@ -52,7 +53,6 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,
   fi
 
   # Perform a test forward so we can parse the port
-  NATPMPC_FORWARDED_PORT=''
   stdbuf -oL natpmpc -g "$GATEWAY_IP" -a 0 0 "udp" 60 | {
     while IFS= read -r line
     do
@@ -71,24 +71,23 @@ for i in sys.stdin.readlines():
       if [ ! -z "$TEMP_NATPMPC_FORWARDED_PORT" ]; then
         log "Detected forwarded port '$TEMP_NATPMPC_FORWARDED_PORT'."
         NATPMPC_FORWARDED_PORT="$TEMP_NATPMPC_FORWARDED_PORT"
+        echo "$NATPMPC_FORWARDED_PORT" > /tmp/natpmpc_forwarded_port
+        break
       fi
       
     done
-  } 
+  }
+
+  NATPMPC_FORWARDED_PORT=$(</tmp/natpmpc_forwarded_port)
 
   # IF the forward failed, just exit.
-  if [ "$?" != "0" ]; then
-    log "Failed to forward UDP port using natpmpc."
+  if [ -z "$NATPMPC_FORWARDED_PORT" ]; then
+    log "Failed to parse forwarded UDP port."
     exit 2
   fi
 
-  if [ -z "$NATPMPC_FORWARDED_PORT" ]; then
-    log "Failed to parse forwarded UDP port."
-    exit 3
-  fi
-
   # Update Deluge config with this new port
-  log "Updating Deluge config to listen on forwarded UDP port '$NATPMPC_FORWARDED_PORT'..."
+  log "Updating Deluge config to listen on forwarded port '$NATPMPC_FORWARDED_PORT'..."
   sed -i -E "s/.*listen_ports.*/    \"listen_ports\": \[ $NATPMPC_FORWARDED_PORT \],\n/" "/etc/config/core.conf"
   
   # Begin a background loop to keep the port active
