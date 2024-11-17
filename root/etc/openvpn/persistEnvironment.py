@@ -24,7 +24,8 @@ wanted_variables = {
     'DISABLE_PORT_UPDATER',
     'TZ',
     'PEER_DNS',
-    'PEER_DNS_PIN_ROUTES'
+    'PEER_DNS_PIN_ROUTES',
+    'OPENVPN_PROTONVPN_NATPMPC'
 }
 
 variables_to_persist = {}
