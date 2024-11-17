@@ -15,7 +15,6 @@ log "Beginning OpenVPN post-Tunnel Up process..."
 # If using ProtonVPN, block until we've detected a gateway and can establish port forwarding
 # most of this will have to move to `tunnelUp.sh`
 # ${VARIABLE,,} is .ToLower()
-log "Gate logic: OPENVPN_PROVIDER '$OPENVPN_PROVIDER', OPENVPN_PROTONVPN_NATPMPC '$OPENVPN_PROTONVPN_NATPMPC'"
 if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,}" = "true" ]; then
   # override the IP for testing
   log "Overwriting gateway IP..."
@@ -36,7 +35,8 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,
         # Pass-through captured output
         echo "$line"
 
-        echo "$line" | grep --quiet -P '^.*(readnatpmpresponseorretry returned).*\(SUCCESS\).*$'
+        readnatpmpresponseorretry returned 0 (OK)
+        echo "$line" | grep --quiet -P '^.*(readnatpmpresponseorretry returned 0 \(OK\)).*$'
         MATCH=$?
         if [[ $MATCH -eq 0 ]]; then
           QUERY_SUCCESS="true"
