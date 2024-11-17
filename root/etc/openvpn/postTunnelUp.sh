@@ -15,7 +15,7 @@ log "Beginning OpenVPN post-Tunnel Up process..."
 # If using ProtonVPN, block until we've detected a gateway and can establish port forwarding
 # most of this will have to move to `tunnelUp.sh`
 # ${VARIABLE,,} is .ToLower()
-if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,}" == "true" ]; then
+if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,}" = "true" ]; then
   # override the IP for testing
   log "Overwriting gateway IP..."
   GATEWAY_IP="10.2.0.1"
