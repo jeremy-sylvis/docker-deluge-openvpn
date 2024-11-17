@@ -35,7 +35,7 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,
         # Pass-through captured output
         echo "$line"
 
-        readnatpmpresponseorretry returned 0 (OK)
+        #readnatpmpresponseorretry returned 0 (OK)
         echo "$line" | grep --quiet -P '^.*(readnatpmpresponseorretry returned 0).*$'
         MATCH=$?
         if [[ $MATCH -eq 0 ]]; then
