@@ -7,7 +7,7 @@
 
 TIMESTAMP_FORMAT='%a %b %d %T %Y'
 log() {
-  echo "$(date +"${TIMESTAMP_FORMAT}") [start-vpn] $*"
+  echo "$(date +"${TIMESTAMP_FORMAT}") [postTunnelUp.sh] $*"
 }
 
 log "Beginning OpenVPN post-Tunnel Up process..."

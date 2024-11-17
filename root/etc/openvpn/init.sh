@@ -9,7 +9,7 @@
 
 TIMESTAMP_FORMAT='%a %b %d %T %Y'
 log() {
-  echo "$(date +"${TIMESTAMP_FORMAT}") [start-vpn] $*"
+  echo "$(date +"${TIMESTAMP_FORMAT}") [init.sh] $*"
 }
 
 if [[ -n "$REVISION" ]]; then
@@ -204,7 +204,7 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
 
   # Hypothetically, if we get to this point, we're out of output - there are no more lines; stdbuf is done; openvpn is done.
   echo "true" > /tmp/openvpn_exited
-}
+} &
 
 # Block until we have the "initialization sequence completed" indicator
 log "Blocking until OpenVPN initialization is complete..."
