@@ -53,7 +53,7 @@ if [ "${OPENVPN_PROVIDER,,}" = "protonvpn" ] && [ "${OPENVPN_PROTONVPN_NATPMPC,,
   fi
 
   # Perform a test forward so we can parse the port
-  stdbuf -oL natpmpc -g "$GATEWAY_IP" -a 0 0 "udp" 60 | {
+  stdbuf -oL natpmpc -g "$GATEWAY_IP" -a 1 0 "udp" 60 | {
     while IFS= read -r line
     do
       # Pass-through captured output
