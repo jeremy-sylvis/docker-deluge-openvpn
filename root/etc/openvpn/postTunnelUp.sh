@@ -92,7 +92,7 @@ for i in sys.stdin.readlines():
   
   # Begin a background loop to keep the port active
   log "Beginning background refresh loop for forwarded port..."
-  while true ; do date ; natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" 0 "udp" 60 && natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" 0 "tcp" 60 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
+  while true ; do date ; natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" "$NATPMPC_FORWARDED_PORT" "udp" 60 && natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" "$NATPMPC_FORWARDED_PORT" "tcp" 60 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
 fi
 
 log "Launching Deluge..."
