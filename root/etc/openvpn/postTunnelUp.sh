@@ -88,11 +88,11 @@ for i in sys.stdin.readlines():
 
   # Update Deluge config with this new port
   log "Updating Deluge config to listen on forwarded port '$NATPMPC_FORWARDED_PORT'..."
-  sed -i -E "s/.*listen_ports.*/    \"listen_ports\": \[ $NATPMPC_FORWARDED_PORT \],\n/" "/etc/config/core.conf"
+  sed -i -E "s/.*listen_ports.*/    \"listen_ports\": \[ $NATPMPC_FORWARDED_PORT \],\n/" "/config/core.conf"
   
   # Begin a background loop to keep the port active
   log "Beginning background refresh loop for forwarded port..."
-  while true ; do date ; natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" "$NATPMPC_FORWARDED_PORT" "udp" 60 && natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" "$NATPMPC_FORWARDED_PORT" "tcp" 60 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
+  while true ; do date ; natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" "$NATPMPC_FORWARDED_PORT" "udp" 55 && natpmpc -g "$GATEWAY_IP" -a "$NATPMPC_FORWARDED_PORT" "$NATPMPC_FORWARDED_PORT" "tcp" 55 || { echo -e "ERROR with natpmpc command \a" ; break ; } ; sleep 45 ; done &
 fi
 
 log "Launching Deluge..."
