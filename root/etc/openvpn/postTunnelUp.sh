@@ -87,8 +87,9 @@ for i in sys.stdin.readlines():
   fi
 
   # Update Deluge config with this new port
-  log "Updating Deluge config to listen on forwarded port '$NATPMPC_FORWARDED_PORT'..."
-  sed -i -E "s/.*listen_ports.*/    \"listen_ports\": \[ $NATPMPC_FORWARDED_PORT \],\n/" "/config/core.conf"
+  # This definitely baleeted the home mfing config
+  #log "Updating Deluge config to listen on forwarded port '$NATPMPC_FORWARDED_PORT'..."
+  #sed -i -E "s/.*listen_ports.*/    \"listen_ports\": \[ $NATPMPC_FORWARDED_PORT \],\n/" "/config/core.conf"
   
   # Begin a background loop to keep the port active
   log "Beginning background refresh loop for forwarded port..."

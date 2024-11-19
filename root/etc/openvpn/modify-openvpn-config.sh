@@ -113,6 +113,11 @@ if [ -n "OVERRIDE_DNS" ]; then
     echo 'pull-filter ignore "dhcp-option DNS"' >> "$CONFIG"
 fi
 
+echo "Modification: Appending pull-filter to ignore IPv6"
+echo 'pull-filter ignore "ifconfig-ipv6"' >> "$CONFIG"
+echo 'pull-filter ignore "route-ipv6"' >> "$CONFIG"
+echo 'pull-filter ignore "tun-ipv6"' >> "$CONFIG"
+
 ## Option 8 - Replace the "up" and "down" hooks with our own scripts
 if [[ $CONFIG_MOD_TUNNEL_UP_DOWN == "1" ]]; then
     echo "Modification: Remove 'up' and 'down' hooks which conflict with CLI"
