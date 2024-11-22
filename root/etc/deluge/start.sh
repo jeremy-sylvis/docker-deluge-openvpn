@@ -97,7 +97,8 @@ else
 fi
 
 log "Starting Deluge"
-exec su --preserve-environment ${RUN_AS} -s /bin/bash -c "/app/deluge-venv/bin/deluged -d -c /config -L info -l $LOGFILE" &
+SSL_CERT_DIR=/usr/lib/ssl/certs
+exec su --preserve-environment ${RUN_AS} -s /bin/bash -c "SSL_CERT_DIR=/usr/lib/ssl/certs /app/deluge-venv/bin/deluged -d -c /config -L info -l $LOGFILE" &
 
 # wait for deluge daemon process to start (listen for port)
 while [[ $(netstat -lnt | awk '$6 == "LISTEN" && $4 ~ ".58846"') == "" ]]; do
