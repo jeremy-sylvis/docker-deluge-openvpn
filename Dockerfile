@@ -3,7 +3,7 @@
 FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND="noninteractive"
-ARG S6_OVERLAY_VERSION=3.2.0.3
+ARG S6_OVERLAY_VERSION=3.2.0.2
 
 RUN set -ex; \
     apt-get update && \

@@ -25,7 +25,6 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v6
         with:
-          context: .
           no-cache: true
           file: ./Dockerfile
           platforms: linux/arm64,linux/amd64
