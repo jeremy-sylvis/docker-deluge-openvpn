@@ -3,6 +3,7 @@
 FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND="noninteractive"
+ARG S6_OVERLAY_VERSION=3.2.0.3
 
 RUN set -ex; \
     apt-get update && \
@@ -72,4 +73,9 @@ HEALTHCHECK --interval=1m CMD /etc/scripts/healthcheck.sh
 # Deluge Deamon and web 
 EXPOSE 8112 58846
 
-CMD ["dumb-init", "/etc/openvpn/init.sh"]
+CMD ["dumb-init", "/etc/orchestration/start.sh"]
+
+# add s6 overlay
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
+ENTRYPOINT ["/init"]
