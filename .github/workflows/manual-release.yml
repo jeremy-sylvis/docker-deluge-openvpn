@@ -27,6 +27,7 @@ jobs:
         with:
           no-cache: true
           file: ./Dockerfile
-          platforms: linux/arm64,linux/amd64
+#          platforms: linux/arm64,linux/amd64
+          platforms: linux/amd64
           push: true
           tags: jsylvis/docker-deluge-openvpn:latest
