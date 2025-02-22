@@ -38,7 +38,8 @@ RUN set -ex; \
 # add s6 overlay
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp/
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp/
-RUN ls /tmp; tar -C / -Jxpvf /tmp/s6-overlay-noarch.tar.xz; tar -C / -Jxpvf /tmp/s6-overlay-x86_64.tar.xz; rm -rf tmp/*
+# tar needs the archive path to follow -f; another flag cannot follow -f e.g. -Jxpfv
+RUN tar -C / -Jxpvf /tmp/s6-overlay-noarch.tar.xz; tar -C / -Jxpvf /tmp/s6-overlay-x86_64.tar.xz; rm -rf tmp/*
 
 # Add configuration and scripts
 COPY root/ /
