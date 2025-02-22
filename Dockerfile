@@ -35,6 +35,11 @@ RUN set -ex; \
     usermod -G 1000 abc && \
     usermod -G users abc
 
+# add s6 overlay
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp/
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp/
+RUN tar -C / -Jxpfv /tmp/s6-overlay-noarch.tar.xz; tar -C / -Jxpfv /tmp/s6-overlay-x86_64.tar.xz; rm -rf tmp/*
+
 # Add configuration and scripts
 COPY root/ /
 
@@ -72,11 +77,6 @@ HEALTHCHECK --interval=1m CMD /etc/scripts/healthcheck.sh
 
 # Deluge Deamon and web 
 EXPOSE 8112 58846
-
-# add s6 overlay
-ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
-ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp
-RUN tar -C / -Jxpfv /tmp/s6-overlay-noarch.tar.xz; tar -C / -Jxpfv /tmp/s6-overlay-x86_64.tar.xz; rm -rf tmp/*
 
 # Set the s6 overlay init
 ENTRYPOINT ["/init"]
