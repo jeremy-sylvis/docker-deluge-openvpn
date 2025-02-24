@@ -20,6 +20,9 @@ CONFIG_MOD_TLS_CERTS=${CONFIG_MOD_TLS_CERTS:-"1"}
 CONFIG_MOD_VERBOSITY=${CONFIG_MOD_VERBOSITY:-"1"}
 CONFIG_MOD_REMAP_USR1=${CONFIG_MOD_REMAP_USR1:-"1"}
 CONFIG_MOD_TUNNEL_UP_DOWN=${CONFIG_MOD_TUNNEL_UP_DOWN:-"1"}
+CONFIG_MOD_DISABLE_COMPRESSION=${CONFIG_MOD_DISABLE_COMPRESSION:-"1"}
+CONFIG_MOD_FAST_IO=${CONFIG_MOD_FAST_IO:-"1"}
+CONFIG_MOD_DATA_CIPHERS=${CONFIG_MOD_DATA_CIPHERS:-"1"}
 
 ## Option 1 - Change the auth-user-pass line to point to credentials file
 if [[ $CONFIG_MOD_USERPASS == "1" ]]; then
@@ -101,11 +104,15 @@ if [[ $CONFIG_MOD_REMAP_USR1 == "1" ]]; then
     echo "remap-usr1 SIGTERM" >> "$CONFIG"
 fi
 
-# In OpenVPN 2.5, '--cipher' is deprecated - strip it from configs.
-#echo "Replacing deprecated '--cipher' parameter with '--data-ciphers'..."
-#sed -i -E "/^cipher.*\s*$/d" "$CONFIG"
+## In OpenVPN 2.5, '--cipher' is deprecated - strip it from configs and replace it with the correct new fields, '--data-ciphers' and '--data-ciphers-fallback'.
+## This also allows us to up the intended default data cipher to the secure & modern AES-256-GCM with a fallback of still-modern AES-256-CBC.
 # "--cipher is not set. Previous OpenVPN version defaulted to BF-CBC as fallback when cipher negotiation failed in this case. If you need this fallback please add '--data-ciphers-fallback BF-CBC' to your configuration and/or add BF-CBC to --data-ciphers."
-#echo "data-ciphers-fallback BF-CBC" >> "$CONFIG"
+if [[ $CONFIG_MOD_DATA_CIPHERS == "1" ]]; then
+    echo "Modification: Replace '--cipher' with '--data-ciphers' and '--data-ciphers-fallback'"
+    sed -i -E "/^cipher.*\s*$/d" "$CONFIG"
+    echo 'data-ciphers AES-256-GCM' >> "$CONFIG"
+    echo 'data-ciphers-fallback AES-256-CBC' >> "$CONFIG"
+fi
 
 # When using the OVERRIDE_DNS option, ignore DNS pushed by the OpenVPN remote.
 if [ -n "OVERRIDE_DNS" ]; then
@@ -123,4 +130,18 @@ if [[ $CONFIG_MOD_TUNNEL_UP_DOWN == "1" ]]; then
     echo "Modification: Remove 'up' and 'down' hooks which conflict with CLI"
     sed -i -E "/^up.*\s*$/d" "$CONFIG"
     sed -i -E "/^down.*\s*$/d" "$CONFIG"
+fi
+
+## In OpenVPN 2.5, '--comp-lzo' and '--compress' are deprecated - compression in general is recommended against.
+## Replace these with '--allow-compression no'. We may have to use '--allow-compression asym' if the server forces it.
+if [[ $CONFIG_MOD_DISABLE_COMPRESSION == "1" ]]; then
+    echo "Modification: Disable compression"
+    sed -i -E "/^comp-lzo.*\s*$/d" "$CONFIG"
+    echo 'allow-compression no' >> "$CONFIG"
+fi
+
+## '--fast-io' can reduce I/O blocking
+if [[ $CONFIG_MOD_FAST_IO == "1" ]]; then
+    echo "Modification: Enable fast-io"
+    echo 'fast-io' >> "$CONFIG"
 fi
