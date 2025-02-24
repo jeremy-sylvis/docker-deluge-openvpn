@@ -134,11 +134,11 @@ fi
 
 ## In OpenVPN 2.5, '--comp-lzo' and '--compress' are deprecated - compression in general is recommended against.
 ## Replace these with '--allow-compression no'. We may have to use '--allow-compression asym' if the server forces it.
-if [[ $CONFIG_MOD_DISABLE_COMPRESSION == "1" ]]; then
-    echo "Modification: Disable compression"
-    sed -i -E "/^comp-lzo.*\s*$/d" "$CONFIG"
-    echo 'allow-compression asym' >> "$CONFIG"
-fi
+# if [[ $CONFIG_MOD_DISABLE_COMPRESSION == "1" ]]; then
+#     echo "Modification: Disable compression"
+#     sed -i -E "/^comp-lzo.*\s*$/d" "$CONFIG"
+#     echo 'allow-compression asym' >> "$CONFIG"
+# fi
 
 ## '--fast-io' can reduce I/O blocking
 if [[ $CONFIG_MOD_FAST_IO == "1" ]]; then
