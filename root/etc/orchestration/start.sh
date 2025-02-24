@@ -1,3 +1,4 @@
+#!/command/with-contenv sh
 #!/bin/bash
 
 # Cleanup temp files
