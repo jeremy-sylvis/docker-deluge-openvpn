@@ -137,7 +137,7 @@ fi
 if [[ $CONFIG_MOD_DISABLE_COMPRESSION == "1" ]]; then
     echo "Modification: Disable compression"
     sed -i -E "/^comp-lzo.*\s*$/d" "$CONFIG"
-    echo 'allow-compression no' >> "$CONFIG"
+    echo 'allow-compression asym' >> "$CONFIG"
 fi
 
 ## '--fast-io' can reduce I/O blocking
