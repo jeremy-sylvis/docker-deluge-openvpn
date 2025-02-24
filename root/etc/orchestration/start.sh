@@ -4,7 +4,7 @@
 # Cleanup temp files
 if [ -d "/tmp" ]; then
     echo "Deleting contents of /tmp..."
-    find /tmp -type d -prune -exec rm -rf {} \;
+    rm -rf /tmp/*
 else
     echo "/tmp doesn't exist; preparing directory..."
     mkdir -p /tmp
