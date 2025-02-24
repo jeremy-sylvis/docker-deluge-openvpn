@@ -110,7 +110,7 @@ fi
 if [[ $CONFIG_MOD_DATA_CIPHERS == "1" ]]; then
     echo "Modification: Replace '--cipher' with '--data-ciphers' and '--data-ciphers-fallback'"
     sed -i -E "/^cipher.*\s*$/d" "$CONFIG"
-    echo 'data-ciphers AES-256-GCM' >> "$CONFIG"
+    echo 'data-ciphers AES-256-GCM:AES-256-CBC' >> "$CONFIG"
     echo 'data-ciphers-fallback AES-256-CBC' >> "$CONFIG"
 fi
 
