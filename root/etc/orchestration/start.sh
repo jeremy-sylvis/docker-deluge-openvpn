@@ -6,7 +6,8 @@ if [ -d "/var/tmp" ]; then
     echo "Deleting contents of /var/tmp..."
     find /var/tmp/ -exec rm -rf {} \;
 else
-    echo "/var/tmp doesn't exist; nothing to cleanup."
+    echo "/var/tmp doesn't exist; preparing directory..."
+    mkdir -p /var/tmp
 fi
 
 # Begin OpenVPN initialization
