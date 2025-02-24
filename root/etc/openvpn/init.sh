@@ -197,24 +197,24 @@ stdbuf -oL openvpn ${DELUGE_CONTROL_OPTS} ${OPENVPN_OPTS} --config "${CHOSEN_OPE
       if [[ $MATCH -eq 0 ]]; then
         # Set our latch
         WAS_INITIALIZATION_COMPLETED=true
-        echo "$WAS_INITIALIZATION_COMPLETED" > /var/tmp/gateway_initialized
+        echo "$WAS_INITIALIZATION_COMPLETED" > /tmp/gateway_initialized
       fi
     fi
   done
 
   # Hypothetically, if we get to this point, we're out of output - there are no more lines; stdbuf is done; openvpn is done.
-  echo "true" > /var/tmp/openvpn_exited
+  echo "true" > /tmp/openvpn_exited
 } &
 
 # Block until we have the "initialization sequence completed" indicator
 log "Blocking until OpenVPN initialization is complete..."
-while [ ! -f /var/tmp/gateway_initialized ]
+while [ ! -f "/tmp/gateway_initialized" ]
 do
   sleep 1s
 done
 
 # Now that initialization is complete, execute the post-init script
-if [[ -x /config/openvpn-post-init.sh ]]; then
+if [[ -x "/config/openvpn-post-init.sh" ]]; then
   log "OpenVPN initialization complete and a post-init script was detected, executing it..."
   /config/openvpn-post-init.sh
 else
@@ -224,7 +224,7 @@ fi
 log "Initialization complete."
 
 # Block until OpenPVN has exited. The original script design assumed OpenVPN was a long-lived command and would block.
-while [ ! -f /var/tmp/openvpn_exited ]
+while [ ! -f "/tmp/openvpn_exited" ]
 do
   sleep 10s
 done

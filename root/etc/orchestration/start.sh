@@ -2,12 +2,12 @@
 #!/bin/bash
 
 # Cleanup temp files
-if [ -d "/var/tmp" ]; then
-    echo "Deleting contents of /var/tmp..."
-    find /var/tmp -type d -prune -exec rm -rf {} \;
+if [ -d "/tmp" ]; then
+    echo "Deleting contents of /tmp..."
+    find /tmp -type d -prune -exec rm -rf {} \;
 else
-    echo "/var/tmp doesn't exist; preparing directory..."
-    mkdir -p /var/tmp
+    echo "/tmp doesn't exist; preparing directory..."
+    mkdir -p /tmp
 fi
 
 # Begin OpenVPN initialization
