@@ -6,8 +6,8 @@ if [[ -z "$VPN_PROVIDER_HOME" ]]; then
 fi
 
 # Download & extract ovpn files from provider
-URL="https://support.vyprvpn.com/hc/article_attachments/360052617332"
-PACKAGE="Vypr_OpenVPN_20200320.zip"
+URL="https://support.vyprvpn.com/hc/article_attachments/44585865394189"
+PACKAGE="VyprVPN_OpenVPN_2026-03-06_256-bit.zip"
 OUTPUT="/tmp/VyprVPN.zip"
 
 download_extract () {
@@ -23,20 +23,8 @@ download_extract () {
 }
 
 rename_configs () {
-  # Automatically renames & moves the OVPN files with the encryption keysize as part of their names
-  cd "${temp_dir}/GF_OpenVPN_20200320" || exit 2
-  for ks in $(find . -maxdepth 1 -type d -iname "OpenVPN*" -print | tr -d '[:alpha:][:punct:]'); do
-    cd "OpenVPN${ks}" || return
-    for f in *.ovpn; do
-      base=$(echo "${f}" | awk -F'.' '{print $1}')
-      ext=$(echo "${f}" | awk -F'.' '{print $2}')
-      nf=$(echo "${base}-${ks}.${ext}")
-      sed -i '/keepalive.*/d' "${f}"
-      cp "${f}" "${VPN_PROVIDER_HOME}/${nf}"
-    done
-    cd ..
-  done
-  cp "${temp_dir}"/GF_OpenVPN_20200320/OpenVPN256/ca.vyprvpn.com.crt "${VPN_PROVIDER_HOME}"
+  cp "${temp_dir}"/VyprVPN_OpenVPN_2026-03-06/* "${VPN_PROVIDER_HOME}/"
+  
   echo "Modify configs for this container"
   find "${VPN_PROVIDER_HOME}" -type f -iname "*.ovpn" -exec /etc/openvpn/modify-openvpn-config.sh {} \;
   # Select a random server as default.ovpn
