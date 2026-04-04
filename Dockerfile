@@ -16,7 +16,7 @@ RUN set -ex; \
     make all && make install && cd / && rm -rf /tmp/libnatpmp && \
     echo "Set up Deluge prerequisites" && \
     mkdir -p /app/deluge-venv && python3 -m venv /app/deluge-venv && . /app/deluge-venv/bin/activate && \
-    apt -y install gir1.2-gtk-3.0 gir1.2-ayatanaappindicator3-0.1 libnotify4 librsvg2-common xdg-utils && \
+    apt -y install python3-libtorrent gir1.2-gtk-3.0 gir1.2-ayatanaappindicator3-0.1 libnotify4 librsvg2-common xdg-utils && \
     DELUGE_VERSION=2.2.0 && \
     echo "Download and install Deluge ${DELUGE_VERSION} from source" && \
     # Actually grab Deluge
@@ -35,6 +35,7 @@ RUN set -ex; \
     usermod -G 1000 abc && \
     usermod -G users abc
 
+# pip3 install libtorrent==2.0.5
 # add s6 overlay
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp/
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp/
