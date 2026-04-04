@@ -16,18 +16,18 @@ RUN set -ex; \
     make all && make install && cd / && rm -rf /tmp/libnatpmp && \
     echo "Set up Deluge prerequisites" && \
     mkdir -p /app/deluge-venv && python3 -m venv /app/deluge-venv && . /app/deluge-venv/bin/activate && \
-    pip3 install wheel && pip3 install libtorrent==2.0.5 && pip3 install tox && pip3 install setuptools==62.6.0 && pip3 install twisted==22.10.0 && \
-    apt -y install libtorrent-rasterbar2.0 python3-geoip python3-dbus python3-gi \
-        python3-gi-cairo gir1.2-gtk-3.0 gir1.2-appindicator3-0.1 python3-pygame libnotify4 \
-        librsvg2-common xdg-utils python3-incremental python3-typing-extensions python3-attr && \
-    echo "Download and install Deluge 2.1.1 from source" && \
+    apt -y install gir1.2-gtk-3.0 gir1.2-ayatanaappindicator3-0.1 libnotify4 librsvg2-common xdg-utils && \
+    DELUGE_VERSION=2.2.0 && \
+    echo "Download and install Deluge ${DELUGE_VERSION} from source" && \
     # Actually grab Deluge
-    mkdir /tmp/deluge && cd /tmp/deluge && wget http://download.deluge-torrent.org/source/2.1/deluge-2.1.1.tar.xz && tar -xf deluge-2.1.1.tar.xz && cd deluge-2.1.1 && cat RELEASE-VERSION && \
+    mkdir /tmp/deluge && cd /tmp/deluge && wget http://download.deluge-torrent.org/source/2.2/deluge-${DELUGE_VERSION}.tar.xz && \
+        tar -xf deluge-${DELUGE_VERSION}.tar.xz && cd deluge-${DELUGE_VERSION} && cat RELEASE-VERSION && \
     # Build & install
-    python3 setup.py build && python3 setup.py install --install-layout=deb && cp /tmp/deluge/deluge-2.1.1/packaging/systemd/deluge*.service /etc/systemd/system/ && \
-    echo "Cleanup Deluge 2.1.1 source" && \
+    pip3 install deluge[all]==${DELUGE_VERSION} && \
+    python3 setup.py build && python3 setup.py install --install-layout=deb && cp /tmp/deluge/deluge-2.2.0/packaging/systemd/deluge*.service /etc/systemd/system/ && \
+    echo "Cleanup Deluge ${DELUGE_VERSION} source" && \
     # Cleanup Deluge itself
-    cd / && rm -rf /tmp/deluge/deluge-2.1.1 && \
+    cd / && rm -rf /tmp/deluge/deluge-${DELUGE_VERSION} && \
     echo "Cleanup image temp and apt lists" && \
     rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/* && \
     echo "Adding user" && \
