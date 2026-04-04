@@ -17,7 +17,7 @@ RUN set -ex; \
     echo "Set up Deluge prerequisites" && \
     apt -y install gir1.2-gtk-3.0 gir1.2-ayatanaappindicator3-0.1 libnotify4 librsvg2-common xdg-utils && \
     mkdir -p /app/deluge-venv && python3 -m venv /app/deluge-venv && . /app/deluge-venv/bin/activate && \
-    pip3 install libtorrent==2.0.5 && \
+    pip3 install rencode==1.0.6 libtorrent==2.0.5 && \
     DELUGE_VERSION=2.2.0 && \
     echo "Download and install Deluge ${DELUGE_VERSION} from source" && \
     # Actually grab Deluge
