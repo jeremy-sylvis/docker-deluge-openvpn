@@ -15,8 +15,9 @@ RUN set -ex; \
     git clone https://github.com/jeremy-sylvis/libnatpmp.git && cd libnatpmp && \
     make all && make install && cd / && rm -rf /tmp/libnatpmp && \
     echo "Set up Deluge prerequisites" && \
+    apt -y install gir1.2-gtk-3.0 gir1.2-ayatanaappindicator3-0.1 libnotify4 librsvg2-common xdg-utils && \
     mkdir -p /app/deluge-venv && python3 -m venv /app/deluge-venv && . /app/deluge-venv/bin/activate && \
-    apt -y install python3-libtorrent gir1.2-gtk-3.0 gir1.2-ayatanaappindicator3-0.1 libnotify4 librsvg2-common xdg-utils && \
+    pip3 install libtorrent==2.0.5 && \
     DELUGE_VERSION=2.2.0 && \
     echo "Download and install Deluge ${DELUGE_VERSION} from source" && \
     # Actually grab Deluge
